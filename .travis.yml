@@ -1,0 +1,20 @@
+language: python
+
+# python versions to test
+python:
+ - "2.6"
+ - "2.7"
+ - "3.2"
+ - "3.3"
+ - "3.4"
+
+# install prerequisites and dependencies
+install:
+  - pip install pep8
+  - pip install git+https://github.com/davidchall/regr-test.git
+  - pip install -e .
+
+# run PEP-8 compliance test and unit tests
+script:
+  - pep8 regr-test testing
+  - nosetests
