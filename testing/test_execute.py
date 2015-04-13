@@ -7,7 +7,7 @@ def test_duration():
     time = 2
     p = execute.execute_process('sleep %s' % time)
     (duration, data) = execute.monitor_process(p)
-    assert_almost_equals(duration, time, places=1)
+    assert_almost_equals(duration, time, places=0)
 
 
 def test_timeout():
