@@ -17,11 +17,11 @@ def source(script, old_env=None):
     if not os.path.isfile(script):
         return None
 
-    # Note: this assumes the shell is bash
-    stdout = subprocess.check_output("source %s; env" % script, env=old_env,
-                                     shell=True, universal_newlines=True)
+    # Force use of bash shell
+    cmd = ['/bin/bash', '-c', 'source %s; env' % script]
+    stdout = subprocess.check_output(cmd, env=old_env, universal_newlines=True)
 
-    return dict((line.split("=", 1) for line in stdout.splitlines()))
+    return dict((line.split('=', 1) for line in stdout.splitlines()))
 
 
 def execute(cmd, stdin=None, stdout=None, stderr=subprocess.STDOUT,

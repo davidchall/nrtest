@@ -11,8 +11,8 @@ def test_source():
         f.write('export %s="%s"' % (var_name, var_value))
 
     env = run.source(script)
-    stdout = check_output('echo $%s' % var_name, env=env,
-                          shell=True, universal_newlines=True)
+    cmd = ['/bin/bash', '-c', 'echo $%s' % var_name]
+    stdout = check_output(cmd, env=env, universal_newlines=True)
 
     os.remove(script)
     assert stdout.strip() == var_value
