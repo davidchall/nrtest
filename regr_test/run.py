@@ -1,4 +1,5 @@
 import six
+import os
 
 import subprocess
 import psutil
@@ -9,14 +10,28 @@ from datetime import datetime
 from collections import namedtuple
 
 
-def execute_process(cmd, stdin=None, stdout=None, stderr=subprocess.STDOUT,
-                    cwd=None, env=None):
+def source(script, old_env=None):
+    """Emulates source in bash and returns the resulting environment object.
+    """
+    script = os.path.abspath(script)
+    if not os.path.isfile(script):
+        return None
+
+    # Note: this assumes the shell is bash
+    stdout = subprocess.check_output("source %s; env" % script, env=old_env,
+                                     shell=True, universal_newlines=True)
+
+    return dict((line.split("=", 1) for line in stdout.splitlines()))
+
+
+def execute(cmd, stdin=None, stdout=None, stderr=subprocess.STDOUT,
+            cwd=None, env=None):
     """Execute command as child process.
 
     Args:
         cmd: either a string containing the entire command to be executed, or
         a sequence of program arguments.
-        Other arguments are passed to the subprocess.Popen() constructor.
+        Other arguments are the usual subprocess.Popen() arguments.
 
     Returns:
         Instance of the psutil.Popen class. This provides the methods of the
@@ -32,7 +47,7 @@ def execute_process(cmd, stdin=None, stdout=None, stderr=subprocess.STDOUT,
                         cwd=cwd, env=env)
 
 
-def monitor_process(proc, timeout=None, min_dt=1, max_ndata=10):
+def monitor(proc, timeout=None, min_dt=1, max_ndata=10):
     """Monitor the status of a process and record performance data. If the
     number of measurements exceeds max_ndata, the data is resampled and the
     time between measurements is increased.
