@@ -59,9 +59,8 @@ def monitor(proc, timeout=None, min_dt=1, max_ndata=10):
         max_ndata: maximum number of performace measurements.
 
     Returns:
-        (duration, data) where duration is the time taken by the process in
-        seconds and data is a list of performance measurements. Duration is
-        set to None if the process times out.
+        (exit_code, duration, data) where data is a list of performance
+        measurements. Duration is set to None if the process times out.
     """
     resampling_factor = 2
 
@@ -76,7 +75,7 @@ def monitor(proc, timeout=None, min_dt=1, max_ndata=10):
     # edit if you fully understand how this works, as it is easy to break.
     while True:
         try:
-            proc.wait(dt)
+            exit_code = proc.wait(dt)
 
             # Process has finished
             duration = (datetime.now() - time_init).total_seconds()
@@ -97,6 +96,7 @@ def monitor(proc, timeout=None, min_dt=1, max_ndata=10):
             # Kill process if it passes user-selected timeout
             if timeout and t >= timeout:
                 proc.kill()
+                exit_code = 1
                 duration = None
                 break
 
@@ -106,7 +106,7 @@ def monitor(proc, timeout=None, min_dt=1, max_ndata=10):
                 ndata = len(data)
                 dt *= resampling_factor
 
-    return (duration, data)
+    return (exit_code, duration, data)
 
 
 def _measure_performance(proc, time):
