@@ -1,5 +1,7 @@
 from regr_test.__version__ import __version__
 
+import os.path
+
 __all__ = ['run']
 
 
@@ -45,23 +47,30 @@ class Test(object):
 
     Optional fields:
         log_file: file for stdout and stderr
-        input_files: list of input files required
-        output_files: list of output files generated
+        in_files: list of input files required
+        out_files: list of output files generated
+        fail_strings: list of strings indicating failure in stdout or stderr
         description: string describing test purpose
     """
     def __init__(self, args, cwd, version, log_file=None,
-                 input_files=[], output_files=[], description=None):
+                 in_files=[], out_files=[], fail_strings=[],
+                 description=None):
         self.args = args
         self.cwd = cwd
         self.version = version
         self.log_file = log_file
-        self.input_files = input_files
-        self.output_files = output_files
+        self.in_files = in_files
+        self.out_files = out_files
+        self.fail_strings = fail_strings
         self.description = description
 
         # Default log filename is constructed from parameter filename
         if not self.log_file:
-            import os
             param_fname = max(self.args, key=len)  # Assumed to be longest arg
             (basename, _) = os.path.splitext(param_fname)
             self.log_file = basename + '.log'
+
+        # Make filepaths absolute
+        self.in_files = [os.path.join(self.cwd, f) for f in self.in_files]
+        self.out_files = [os.path.join(self.cwd, f) for f in self.out_files]
+        self.log_file = os.path.join(self.cwd, self.log_file)
