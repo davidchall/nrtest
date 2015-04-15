@@ -120,7 +120,11 @@ def _measure_performance(proc, time):
         namedtuple containing a data point.
     """
     cpu_usage = proc.cpu_percent()
-    mem_usage = proc.memory_info().rss
+    mem_usage = float(proc.memory_info().rss) / 1024 / 1024  # MB
+
+    # TODO: IO counters not available on OS X, but could use on Linux
+    # read_usage = float(proc.io_counters().read_bytes) / 1024 / 1024  # MB
+    # write_usage = float(proc.io_counters().write_bytes) / 1024 / 1024  # MB
 
     Performance = namedtuple('Performance', 'time, cpu_usage, mem_usage')
     return Performance(time, cpu_usage, mem_usage)
