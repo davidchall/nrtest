@@ -22,13 +22,13 @@ def test_source():
 def test_duration():
     time = 2
     p = run.execute('sleep %s' % time)
-    (duration, data) = run.monitor(p)
+    (_, duration, _) = run.monitor(p)
 
     assert abs(duration-time) < 1.0
 
 
 def test_timeout():
     p = run.execute('sleep 5')
-    (duration, data) = run.monitor(p, timeout=2)
+    (_, duration, _) = run.monitor(p, timeout=2)
 
     assert duration is None
