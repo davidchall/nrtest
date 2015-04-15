@@ -96,7 +96,7 @@ def monitor(proc, timeout=None, min_dt=1, max_ndata=10):
             # Kill process if it passes user-selected timeout
             if timeout and t >= timeout:
                 proc.kill()
-                exit_code = 1
+                exit_code = 0
                 duration = None
                 break
 
