@@ -1,20 +1,21 @@
 from regr_test import run
 
-from subprocess import check_output
 import os
+from subprocess import check_output
+from tempfile import NamedTemporaryFile
 
 
 def test_source():
-    script = 'test_env.sh'
     var_name, var_value = 'TESTVAR', 'This is a test'
-    with open(script, 'w') as f:
+    with NamedTemporaryFile('w', delete=False) as f:
         f.write('export %s="%s"' % (var_name, var_value))
+        script_name = f.name
 
-    env = run.source(script)
+    env = run.source(script_name)
     cmd = ['/bin/bash', '-c', 'echo $%s' % var_name]
     stdout = check_output(cmd, env=env, universal_newlines=True)
 
-    os.remove(script)
+    os.remove(script_name)
     assert stdout.strip() == var_value
 
 
