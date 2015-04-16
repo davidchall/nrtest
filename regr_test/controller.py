@@ -22,7 +22,7 @@ def perform_test(app, test):
         proc = run.execute(cmd, env=env, cwd=test.cwd, stdout=log_file)
         (exit_code, duration, performance) = run.monitor(proc, timeout=timeout)
     except IOError:
-        return 'Unable to write log file: %s' % test.log_file
+        return 'Unable to write log file: "%s"' % test.log_file
     finally:
         log_file.close()
 
@@ -35,9 +35,15 @@ def perform_test(app, test):
     if duration is None:
         return 'Program timed out (duration > %ss)' % timeout
 
+    if len(test.fail_strings) > 0:
+        with open(test.log_file) as f:
+            for line in f:
+                if any(s in line for s in test.fail_strings):
+                    return 'Failure string found in log file'
+
     for fname in test.out_files:
         if not os.path.isfile(fname):
-            return '%s was not generated' % fname
+            return 'Output file not generated: "%s"' % fname
 
     # TODO: check log file for failure strings
     # TODO: do something with duration and performance data
