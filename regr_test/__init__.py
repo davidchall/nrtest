@@ -19,14 +19,22 @@ class Application(object):
         exe: application executable
         setup_script: environment setup script
         version: application version
+        tests_path: directory containing tests
+        benchmark_path: directory for output files
 
     Optional fields:
+        timeout: time [s] before test is cancelled
         description: string describing version
     """
-    def __init__(self, exe, setup_script, version, description=None):
+    def __init__(self, exe, setup_script, version,
+                 tests_path, benchmark_path,
+                 timeout=None, description=None):
         self.exe = exe
         self.setup_script = setup_script
         self.version = version
+        self.tests_path = tests_path
+        self.benchmark_path = benchmark_path
+        self.timeout = timeout
         self.description = description
 
 
@@ -42,7 +50,6 @@ class Test(object):
 
     Mandatory fields:
         args: list of arguments to pass to executable
-        cwd: working directory used in test
         version: test version
 
     Optional fields:
@@ -52,11 +59,10 @@ class Test(object):
         fail_strings: list of strings indicating failure in stdout or stderr
         description: string describing test purpose
     """
-    def __init__(self, args, cwd, version, log_file=None,
+    def __init__(self, args, version, log_file=None,
                  in_files=[], out_files=[], fail_strings=[],
                  description=None):
         self.args = args
-        self.cwd = cwd
         self.version = version
         self.log_file = log_file
         self.in_files = in_files
@@ -69,8 +75,3 @@ class Test(object):
             param_fname = max(self.args, key=len)  # Assumed to be longest arg
             (basename, _) = os.path.splitext(param_fname)
             self.log_file = basename + '.log'
-
-        # Make filepaths absolute
-        self.in_files = [os.path.join(self.cwd, f) for f in self.in_files]
-        self.out_files = [os.path.join(self.cwd, f) for f in self.out_files]
-        self.log_file = os.path.join(self.cwd, self.log_file)
