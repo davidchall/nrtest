@@ -1,77 +1,119 @@
 from regr_test.__version__ import __version__
 
 import os.path
-
-__all__ = ['run']
-
-
-class Application(object):
-    """The application under test.
-
-    Application metadata is read from a JSON file, e.g.
-
-        import json
-        with open('program.json') as f:
-            app = Application(**json.load(f))
+import json
 
 
-    Mandatory fields:
-        exe: application executable
-        setup_script: environment setup script
-        version: application version
-        tests_path: directory containing tests
-        benchmark_path: directory for output files
+class Metadata(dict):
+    """Metadata can be accessed using both dictionary and attribute syntax.
+    Provides basic valiation of input fields, with different requirements for
+    the testing and reading (needed for comparison) steps.
+    """
+    _read_requires = []
+    _test_requires = []
+    _allowed = []
+
+    def __init__(self, *args, **kwargs):
+        super(Metadata, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+        for k in self._allowed:
+            if k not in self:
+                self[k] = None
+
+    @classmethod
+    def for_testing(cls, data):
+        cls._validate(data, cls._test_requires, cls._allowed)
+        return cls(**data)
+
+    @classmethod
+    def for_reading(cls, data):
+        cls._validate(data, cls._read_requires, cls._allowed)
+        return cls(**data)
+
+    @classmethod
+    def from_json(cls, path):
+        with open(path) as f:
+            data = json.load(f)
+        return cls.for_testing(data)
+
+    @classmethod
+    def from_sqlite(cls, row):
+        data = {k: row[k] for k in row.keys()}
+        return cls.for_reading(data)
+
+    @staticmethod
+    def _validate(data, required, allowed):
+        for k in required:
+            if k not in data:
+                raise ValueError('Missing field: "%s"' % k)
+
+        for k in data.keys():
+            if k not in allowed:
+                raise ValueError('Unrecognised field: "%s"' % k)
+
+
+class Application(Metadata):
+    """When declaring the application in a JSON file...
+
+    Required fields:
+        name
+        version
+        exe: executable [path]
+        setup_script: environment setup script [path]
+        tests_path [path]
+        benchmark_path [path]
 
     Optional fields:
-        timeout: time [s] before test is cancelled
-        description: string describing version
+        description
+        timeout [float in secs]
     """
-    def __init__(self, exe, setup_script, version,
-                 tests_path, benchmark_path,
-                 timeout=None, description=None):
-        self.exe = exe
-        self.setup_script = setup_script
-        self.version = version
-        self.tests_path = tests_path
-        self.benchmark_path = benchmark_path
-        self.timeout = timeout
-        self.description = description
+
+    _read_requires = ['name', 'version']
+    _test_requires = ['exe', 'setup_script', 'tests_path', 'benchmark_path']
+    _test_requires += _read_requires
+    _allowed = ['description', 'timeout'] + _test_requires
 
 
-class Test(object):
-    """A single test.
+class Test(Metadata):
+    """When declaring the test in a JSON file...
 
-    Test metadata is read from a JSON file, e.g.
-
-        import json
-        with open('test.json') as f:
-            test = Test(**json.load(f))
-
-
-    Mandatory fields:
-        args: list of arguments to pass to executable
-        version: test version
+    Required fields (testing):
+        name
+        version
+        args: arguments to pass to executable [list of strings]
 
     Optional fields:
-        log_file: file for stdout and stderr
-        in_files: list of input files required
-        out_files: list of output files generated
-        fail_strings: list of strings indicating failure in stdout or stderr
-        description: string describing test purpose
+        description
+        log_file [path]
+        input_files [list of paths]
+        output_files [list of paths]
+        fail_strings: list of strings indicating failure in log file
     """
-    def __init__(self, args, version, log_file=None,
-                 in_files=[], out_files=[], fail_strings=[],
-                 description=None):
-        self.args = args
-        self.version = version
-        self.log_file = log_file
-        self.in_files = in_files
-        self.out_files = out_files
-        self.fail_strings = fail_strings
-        self.description = description
+
+    _read_requires = ['name', 'version', 'passed']
+    _test_requires = ['name', 'version', 'args']
+    _allowed = ['log_file', 'input_files', 'output_files', 'fail_strings',
+                'passed', 'error_msg', 'duration', 'performance',
+                'description'] + _test_requires
+
+    def __init__(self, *args, **kwargs):
+        super(Test, self).__init__(*args, **kwargs)
 
         # Default log filename is constructed from parameter filename
         if not self.log_file:
             param_fname = max(self.args, key=len)  # Assumed to be longest arg
             (basename, _) = os.path.splitext(param_fname)
             self.log_file = basename + '.log'
+
+    @classmethod
+    def for_testing(cls, data):
+        obj = super(Test, cls).for_testing(data)
+
+        # These are results of test, so don't read from file
+        obj.passed = False
+        obj.error_msg = None
+        obj.duration = None
+        obj.performance = None
+
+        return obj

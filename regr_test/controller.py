@@ -25,12 +25,12 @@ def pre_testsuite_checks(app):
 
 
 def pre_test_checks(app, test):
-    for fname in test.in_files:
+    for fname in test.input_files:
         fpath = os.path.join(app.tests_path, fname)
         if not os.path.isfile(fpath):
             raise TestFailure('Input file not found: "%s"' % fpath)
 
-    for fname in test.out_files + [test.log_file]:
+    for fname in test.output_files + [test.log_file]:
         fpath = os.path.join(app.benchmark_path, fname)
         if os.path.exists(fpath):
             raise TestFailure('Output file already exists: "%s"' % fpath)
@@ -44,7 +44,7 @@ def perform_test(app, test):
 
     try:
         # Copy input files to working directory
-        for fname in test.in_files:
+        for fname in test.input_files:
             folder, _ = os.path.split(fname)
             dest_dir = os.path.join(tmpdir, folder)
             if not os.path.isdir(dest_dir):
@@ -61,7 +61,7 @@ def perform_test(app, test):
             (exit_code, duration, perf) = run.monitor(p, timeout=app.timeout)
 
         # Copy output files to benchmark directory
-        for fname in test.out_files:
+        for fname in test.output_files:
             folder, _ = os.path.split(fname)
             dest_dir = os.path.join(app.benchmark_path, folder)
             if not os.path.isdir(dest_dir):
@@ -87,14 +87,14 @@ def perform_test(app, test):
 def post_test_checks(app, test):
     # TODO: support regex?
     # TODO: highlight which failure string was found
-    if len(test.fail_strings) > 0:
+    if test.fail_strings and len(test.fail_strings) > 0:
         fpath = os.path.join(app.benchmark_path, test.log_file)
         with open(fpath) as f:
             for line in f:
                 if any(s in line for s in test.fail_strings):
                     raise TestFailure('Failure string found in log file')
 
-    for fname in test.out_files:
+    for fname in test.output_files:
         fpath = os.path.join(app.benchmark_path, fname)
         if not os.path.isfile(fpath):
             raise TestFailure('Output file not generated: "%s"' % fname)
