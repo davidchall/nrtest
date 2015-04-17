@@ -6,7 +6,7 @@ import shutil
 
 
 class TestFailure(Exception):
-    """docstring for TestFailure"""
+    """Exception raised in case of test failure."""
     def __init__(self, value):
         super(TestFailure, self).__init__()
         self.value = value
@@ -88,11 +88,13 @@ def post_test_checks(app, test):
     # TODO: support regex?
     # TODO: highlight which failure string was found
     if len(test.fail_strings) > 0:
-        with open(test.log_file) as f:
+        fpath = os.path.join(app.benchmark_path, test.log_file)
+        with open(fpath) as f:
             for line in f:
                 if any(s in line for s in test.fail_strings):
                     raise TestFailure('Failure string found in log file')
 
     for fname in test.out_files:
-        if not os.path.isfile(fname):
+        fpath = os.path.join(app.benchmark_path, fname)
+        if not os.path.isfile(fpath):
             raise TestFailure('Output file not generated: "%s"' % fname)
