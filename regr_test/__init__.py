@@ -1,46 +1,35 @@
 from regr_test.__version__ import __version__
 
 import os.path
-import json
 
 
 class Metadata(dict):
     """Metadata can be accessed using both dictionary and attribute syntax.
     Provides basic valiation of input fields, with different requirements for
-    the testing and reading (needed for comparison) steps.
+    the testing and comparison steps.
     """
-    _read_requires = []
-    _test_requires = []
-    _allowed = []
+    _compare_requires = []
+    _testing_requires = []
+    _testing_allows = {}
 
     def __init__(self, *args, **kwargs):
         super(Metadata, self).__init__(*args, **kwargs)
         self.__dict__ = self
 
-        for k in self._allowed:
-            if k not in self:
-                self[k] = None
+    def skim(self):
+        return {k: self.get(k, None) for k in self._compare_requires}
 
     @classmethod
-    def for_testing(cls, data):
-        cls._validate(data, cls._test_requires, cls._allowed)
+    def for_test(cls, data):
+        requires, allows = cls._testing_requires, cls._testing_allows
+        cls._validate(data, requires, allows)
         return cls(**data)
 
     @classmethod
-    def for_reading(cls, data):
-        cls._validate(data, cls._read_requires, cls._allowed)
+    def for_compare(cls, data):
+        requires, allows = cls._compare_requires, {}
+        cls._validate(data, requires, allows)
         return cls(**data)
-
-    @classmethod
-    def from_json(cls, path):
-        with open(path) as f:
-            data = json.load(f)
-        return cls.for_testing(data)
-
-    @classmethod
-    def from_sqlite(cls, row):
-        data = {k: row[k] for k in row.keys()}
-        return cls.for_reading(data)
 
     @staticmethod
     def _validate(data, required, allowed):
@@ -49,8 +38,12 @@ class Metadata(dict):
                 raise ValueError('Missing field: "%s"' % k)
 
         for k in data.keys():
-            if k not in allowed:
+            if k not in allowed and k not in required:
                 raise ValueError('Unrecognised field: "%s"' % k)
+
+        for k, v in allowed.items():
+            if k not in data:
+                data[k] = v
 
 
 class Application(Metadata):
@@ -68,11 +61,23 @@ class Application(Metadata):
         description
         timeout [float in secs]
     """
-
-    _read_requires = ['name', 'version']
-    _test_requires = ['exe', 'setup_script', 'tests_path', 'benchmark_path']
-    _test_requires += _read_requires
-    _allowed = ['description', 'timeout'] + _test_requires
+    _testing_requires = [
+        'name',
+        'version',
+        'exe',
+        'setup_script',
+        'tests_path',
+        'benchmark_path',
+    ]
+    _testing_allows = {
+        'description': None,
+        'timeout': None,
+    }
+    _compare_requires = [
+        'name',
+        'version',
+        'description',
+    ]
 
 
 class Test(Metadata):
@@ -90,12 +95,30 @@ class Test(Metadata):
         output_files [list of paths]
         fail_strings: list of strings indicating failure in log file
     """
-
-    _read_requires = ['name', 'version', 'passed']
-    _test_requires = ['name', 'version', 'args']
-    _allowed = ['log_file', 'input_files', 'output_files', 'fail_strings',
-                'passed', 'error_msg', 'duration', 'performance',
-                'description'] + _test_requires
+    _testing_requires = [
+        'name',
+        'version',
+        'args',
+    ]
+    _testing_allows = {
+        'description': None,
+        'log_file': None,
+        'input_files': [],
+        'output_files': [],
+        'fail_strings': [],
+        'timeout': None,
+    }
+    _compare_requires = [
+        'name',
+        'version',
+        'description',
+        'log_file',
+        'output_files',
+        'passed',
+        'error_msg',
+        'duration',
+        'performance',
+    ]
 
     def __init__(self, *args, **kwargs):
         super(Test, self).__init__(*args, **kwargs)
@@ -105,15 +128,3 @@ class Test(Metadata):
             param_fname = max(self.args, key=len)  # Assumed to be longest arg
             (basename, _) = os.path.splitext(param_fname)
             self.log_file = basename + '.log'
-
-    @classmethod
-    def for_testing(cls, data):
-        obj = super(Test, cls).for_testing(data)
-
-        # These are results of test, so don't read from file
-        obj.passed = False
-        obj.error_msg = None
-        obj.duration = None
-        obj.performance = None
-
-        return obj
