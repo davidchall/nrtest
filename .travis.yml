@@ -16,4 +16,4 @@ install:
 # run PEP-8 compliance test and unit tests
 script:
   - pep8 regr_test testing
-  - nosetests
+  - nosetests testing
