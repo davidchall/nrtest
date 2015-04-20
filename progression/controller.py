@@ -1,4 +1,4 @@
-from regr_test import run
+from . import run
 
 import os
 import tempfile

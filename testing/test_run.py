@@ -1,4 +1,4 @@
-from regr_test import run
+from progression import run
 
 import os
 from subprocess import check_output
