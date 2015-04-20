@@ -9,11 +9,15 @@ python:
 
 # install prerequisites and dependencies
 install:
-  - pip install pep8
+  - pip install pep8 coveralls
   - pip install git+https://github.com/davidchall/regr-test.git
   - pip install -e .
 
 # run PEP-8 compliance test and unit tests
 script:
   - pep8 regr_test testing
-  - nosetests testing
+  - nosetests testing --with-coverage --cover-package=regr_test
+
+# Submit data to coveralls
+after_success:
+  coveralls
