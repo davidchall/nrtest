@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from distutils.util import convert_path
 
 # Get version from package
-ver_path = convert_path('progression/__version__.py')
+ver_path = convert_path('nrtest/__version__.py')
 ns = {}
 with open(ver_path) as f:
     exec(f.read(), ns)
@@ -10,7 +10,7 @@ version = ns['__version__']
 
 
 setup(
-    name='progression',
+    name='nrtest',
     version=version,
     packages=find_packages(exclude=['testing']),
 
@@ -24,5 +24,5 @@ setup(
     author='David Hall',
     description='Numerical regression testing',
     license='MIT',
-    url='https://github.com/davidchall/progression',
+    url='https://github.com/davidchall/nrtest',
 )
