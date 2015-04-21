@@ -55,21 +55,23 @@ def perform_test(app, test):
         log_fpath = os.path.join(app.benchmark_path, test.log_file)
         cmd = ' '.join([app.exe] + test.args)
         env = run.source(app.setup_script)
-
-        with open(log_fpath, 'w') as log_file:
-            p = run.execute(cmd, env=env, cwd=tmpdir, stdout=log_file)
-            (exit_code, duration, perf) = run.monitor(p, timeout=app.timeout)
+        try:
+            with open(log_fpath, 'w') as log_file:
+                p = run.execute(cmd, env=env, cwd=tmpdir, stdout=log_file)
+                (exit_code, dur, perf) = run.monitor(p, timeout=app.timeout)
+        except IOError:
+            raise TestFailure('Unable to write log file: "%s"' % test.log_file)
 
         # Copy output files to benchmark directory
         for fname in test.output_files:
-            folder, _ = os.path.split(fname)
-            dest_dir = os.path.join(app.benchmark_path, folder)
-            if not os.path.isdir(dest_dir):
-                os.makedirs(dest_dir)
-            shutil.copy(os.path.join(tmpdir, fname), dest_dir)
-
-    except IOError:
-        raise TestFailure('Unable to write log file: "%s"' % test.log_file)
+            try:
+                folder, _ = os.path.split(fname)
+                dest_dir = os.path.join(app.benchmark_path, folder)
+                if not os.path.isdir(dest_dir):
+                    os.makedirs(dest_dir)
+                shutil.copy(os.path.join(tmpdir, fname), dest_dir)
+            except IOError:
+                raise TestFailure('Output file not generated: "%s"' % fname)
     finally:
         shutil.rmtree(tmpdir)
 
