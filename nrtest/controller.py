@@ -1,6 +1,7 @@
 from . import run
 
 import os
+import sys
 import tempfile
 import shutil
 
@@ -80,10 +81,10 @@ def perform_test(app, test):
     elif exit_code != 0:
         raise TestFailure('Non-zero exit code')
 
-    if duration is None:
+    if dur is None:
         raise TestFailure('Program timed out (duration > %ss)' % app.timeout)
 
-    return (duration, perf)
+    return (dur, perf)
 
 
 def post_test_checks(app, test):
@@ -100,3 +101,28 @@ def post_test_checks(app, test):
         fpath = os.path.join(app.benchmark_path, fname)
         if not os.path.isfile(fpath):
             raise TestFailure('Output file not generated: "%s"' % fname)
+
+
+def execute_testsuite(app, tests):
+    # If pre-tests fail, exit before executing any tests
+    try:
+        pre_testsuite_checks(app)
+        for test in tests:
+            pre_test_checks(app, test)
+    except TestFailure as e:
+        print(e.value)
+        sys.exit(1)
+
+    for test in tests:
+        try:
+            (test.duration, test.performance) = perform_test(app, test)
+            post_test_checks(app, test)
+        except TestFailure as e:
+            test.passed = False
+            test.error_msg = e.value
+            test.duration, test.performance = None, None
+        except KeyboardInterrupt as e:
+            print('Process interrupted by user')
+        else:
+            test.passed = True
+            test.error_msg = None

@@ -13,6 +13,7 @@ setup(
     name='nrtest',
     version=version,
     packages=find_packages(exclude=['testing']),
+    scripts=['scripts/nrtest'],
 
     # dependencies
     install_requires=[

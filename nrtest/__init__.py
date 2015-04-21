@@ -1,6 +1,8 @@
 from .__version__ import __version__
+from . import controller
 
 import os.path
+import json
 
 
 class Metadata(dict):
@@ -132,3 +134,25 @@ class Test(Metadata):
             param_fname = max(self.args, key=len)  # Assumed to be longest arg
             (basename, _) = os.path.splitext(param_fname)
             self.log_file = basename + '.log'
+
+
+def write_testsuite_results(app, tests):
+    manifest = {
+        'Application': app.skim(),
+        'Tests': [test.skim() for test in tests]
+    }
+
+    manifest_path = os.path.join(app.benchmark_path, app.manifest_file)
+    with open(manifest_path, 'w') as f:
+        json.dump(manifest, f, sort_keys=True, indent=4,
+                  separators=(',', ': '))
+
+
+def read_testsuite_results(manifest_path):
+    with open(manifest_path) as f:
+        manifest = json.load(f)
+
+    app = Application.for_compare(manifest['Application'])
+    tests = [Test.for_compare(test) for test in manifest['Tests']]
+
+    return (app, tests)
