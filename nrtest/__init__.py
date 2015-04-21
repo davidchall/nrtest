@@ -80,7 +80,7 @@ class Application(Metadata):
     ]
 
     def __init__(self, *args, **kwargs):
-        super(Test, self).__init__(*args, **kwargs)
+        super(Application, self).__init__(*args, **kwargs)
         self['manifest_file'] = 'manifest.json'
 
 
