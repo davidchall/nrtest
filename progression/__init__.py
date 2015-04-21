@@ -79,6 +79,10 @@ class Application(Metadata):
         'description',
     ]
 
+    def __init__(self, *args, **kwargs):
+        super(Test, self).__init__(*args, **kwargs)
+        self['manifest_file'] = 'manifest.json'
+
 
 class Test(Metadata):
     """When declaring the test in a JSON file...
