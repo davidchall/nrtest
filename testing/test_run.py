@@ -1,4 +1,4 @@
-from progression import run
+from nrtest import run
 
 import os
 from subprocess import check_output

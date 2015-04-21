@@ -1,3 +1,3 @@
-*.sublime-workspace
+*.sublime-*
 *.pyc
 .coverage
