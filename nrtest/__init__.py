@@ -6,7 +6,7 @@ import json
 
 class Metadata(dict):
     """Metadata can be accessed using both dictionary and attribute syntax.
-    Provides basic valiation of input fields, with different requirements for
+    Provides basic validation of input fields, with different requirements for
     the testing and comparison steps.
     """
     _compare_requires = []
