@@ -1,4 +1,4 @@
-from . import run
+from nrtest.test.process import source, execute, monitor
 
 import os
 import sys
@@ -37,7 +37,7 @@ def pre_test_checks(app, test):
             raise TestFailure('Output file already exists: "%s"' % fpath)
 
 
-def perform_test(app, test):
+def run_test(app, test):
     try:
         tmpdir = tempfile.mkdtemp()
     except OSError:
@@ -55,11 +55,11 @@ def perform_test(app, test):
         # Perform test
         log_fpath = os.path.join(app.benchmark_path, test.log_file)
         cmd = ' '.join([app.exe] + test.args)
-        env = run.source(app.setup_script)
+        env = source(app.setup_script)
         try:
             with open(log_fpath, 'w') as log_file:
-                p = run.execute(cmd, env=env, cwd=tmpdir, stdout=log_file)
-                (exit_code, dur, perf) = run.monitor(p, timeout=app.timeout)
+                p = execute(cmd, env=env, cwd=tmpdir, stdout=log_file)
+                (exit_code, dur, perf) = monitor(p, timeout=app.timeout)
         except IOError:
             raise TestFailure('Unable to write log file: "%s"' % test.log_file)
 
@@ -115,7 +115,7 @@ def execute_testsuite(app, tests):
 
     for test in tests:
         try:
-            (test.duration, test.performance) = perform_test(app, test)
+            (test.duration, test.performance) = run_test(app, test)
             post_test_checks(app, test)
         except TestFailure as e:
             test.passed = False

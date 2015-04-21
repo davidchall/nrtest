@@ -1,5 +1,4 @@
 from .__version__ import __version__
-from . import controller
 
 import os.path
 import json
@@ -136,7 +135,7 @@ class Test(Metadata):
             self.log_file = basename + '.log'
 
 
-def write_testsuite_results(app, tests):
+def write_testsuite(app, tests):
     manifest = {
         'Application': app.skim(),
         'Tests': [test.skim() for test in tests]
@@ -148,7 +147,7 @@ def write_testsuite_results(app, tests):
                   separators=(',', ': '))
 
 
-def read_testsuite_results(manifest_path):
+def read_testsuite(manifest_path):
     with open(manifest_path) as f:
         manifest = json.load(f)
 

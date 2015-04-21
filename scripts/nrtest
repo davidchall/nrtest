@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 from nrtest import Application, Test
-import nrtest
+from nrtest import write_testsuite
+from nrtest.test import execute_testsuite
 
 from argparse import ArgumentParser
 import json
@@ -17,5 +18,5 @@ if __name__ == '__main__':
     with open(args.test) as f:
         test = Test.for_test(json.load(f))
 
-    nrtest.controller.execute_testsuite(app, [test])
-    nrtest.write_testsuite_results(app, [test])
+    execute_testsuite(app, [test])
+    write_testsuite(app, [test])
