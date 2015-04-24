@@ -3,7 +3,6 @@ from os.path import exists, isfile, isdir, join, split, splitext
 import tempfile
 import re
 import shutil
-import logging
 
 from nrtest import Metadata
 from nrtest.process import source, execute, monitor
