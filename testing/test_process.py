@@ -1,4 +1,4 @@
-from nrtest.test.process import source, execute, monitor
+from nrtest.process import source, execute, monitor
 
 import os
 from subprocess import check_output
