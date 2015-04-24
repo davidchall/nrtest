@@ -11,7 +11,6 @@ class TestSuite(object):
     def __init__(self, app, tests=[]):
         self.app = app
         self.tests = tests
-        self.logger = logging.getLogger()
         self.manifest_fname = 'manifest.json'
 
     def write_manifest(self):

@@ -3,11 +3,24 @@
 from nrtest.testsuite import TestSuite
 from argparse import ArgumentParser
 
+import logging
+
 if __name__ == '__main__':
     parser = ArgumentParser(description='Numerical regression testing')
     parser.add_argument('app', help='Metadata file of application under test')
     parser.add_argument('test', help='Metadata file of test')
+
+    parser.add_argument('-q', '--quiet', help='Suppress normal messages',
+                        dest='LOGLEVEL', action='store_const',
+                        const=logging.WARNING, default=logging.INFO)
+    parser.add_argument('-v', '--verbose', help='Output debug messages',
+                        dest='LOGLEVEL', action='store_const',
+                        const=logging.DEBUG, default=logging.INFO)
+
     args = parser.parse_args()
+
+    LOGFORMAT = '%(levelname)s: %(message)s'
+    logging.basicConfig(level=args.LOGLEVEL, format=LOGFORMAT)
 
     ts = TestSuite.read_config(args.app, [args.test])
     ts.execute()
