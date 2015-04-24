@@ -1,8 +1,5 @@
 from .__version__ import __version__
 
-import os.path
-import json
-
 
 class Metadata(dict):
     """Metadata can be accessed using both dictionary and attribute syntax.
@@ -82,76 +79,3 @@ class Application(Metadata):
 
     def __init__(self, *args, **kwargs):
         super(Application, self).__init__(*args, **kwargs)
-        self['manifest_file'] = 'manifest.json'
-
-
-class Test(Metadata):
-    """When declaring the test in a JSON file...
-
-    Required fields (testing):
-        name
-        version
-        args: arguments to pass to executable [list of strings]
-
-    Optional fields:
-        description
-        log_file [path]
-        input_files [list of paths]
-        output_files [list of paths]
-        fail_strings: list of strings indicating failure in log file
-    """
-    _testing_requires = [
-        'name',
-        'version',
-        'args',
-    ]
-    _testing_allows = {
-        'description': None,
-        'log_file': None,
-        'input_files': [],
-        'output_files': [],
-        'fail_strings': [],
-        'timeout': None,
-    }
-    _compare_requires = [
-        'name',
-        'version',
-        'description',
-        'log_file',
-        'output_files',
-        'passed',
-        'error_msg',
-        'duration',
-        'performance',
-    ]
-
-    def __init__(self, *args, **kwargs):
-        super(Test, self).__init__(*args, **kwargs)
-
-        # Default log filename is constructed from parameter filename
-        if not self.log_file:
-            param_fname = max(self.args, key=len)  # Assumed to be longest arg
-            (basename, _) = os.path.splitext(param_fname)
-            self.log_file = basename + '.log'
-
-
-def write_testsuite(app, tests):
-    manifest = {
-        'Application': app.skim(),
-        'Tests': [test.skim() for test in tests]
-    }
-
-    manifest_path = os.path.join(app.benchmark_path, app.manifest_file)
-    with open(manifest_path, 'w') as f:
-        json.dump(manifest, f, sort_keys=True, indent=4,
-                  separators=(',', ': '))
-
-
-def read_testsuite(manifest_path):
-    with open(manifest_path) as f:
-        manifest = json.load(f)
-
-    app = Application.for_compare(manifest['Application'])
-    tests = [Test.for_compare(test) for test in manifest['Tests']]
-
-    return (app, tests)

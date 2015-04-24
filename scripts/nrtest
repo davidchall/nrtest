@@ -1,22 +1,31 @@
 #!/usr/bin/env python
 
-from nrtest import Application, Test
-from nrtest import write_testsuite
-from nrtest.test import execute_testsuite
+from nrtest.testsuite import TestSuite
 
+import logging
+import os.path
 from argparse import ArgumentParser
-import json
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Numerical regression testing')
-    parser.add_argument('app', help='Metadata file of application under test')
-    parser.add_argument('test', help='Metadata file of test')
+
+    parser.add_argument('app', metavar='app.json',
+                        help='application config card')
+    parser.add_argument('tests', metavar='test.json', nargs='+',
+                        help='test config card')
+
+    parser.add_argument('-q', '--quiet', help='suppress normal messages',
+                        dest='LOGLEVEL', action='store_const',
+                        const=logging.WARNING, default=logging.INFO)
+    parser.add_argument('-v', '--verbose', help='output debug messages',
+                        dest='LOGLEVEL', action='store_const',
+                        const=logging.DEBUG, default=logging.INFO)
+
     args = parser.parse_args()
 
-    with open(args.app) as f:
-        app = Application.for_test(json.load(f))
-    with open(args.test) as f:
-        test = Test.for_test(json.load(f))
+    LOGFORMAT = '%(levelname)s: %(message)s'
+    logging.basicConfig(level=args.LOGLEVEL, format=LOGFORMAT)
 
-    execute_testsuite(app, [test])
-    write_testsuite(app, [test])
+    ts = TestSuite.read_config(args.app, args.tests)
+    ts.execute()
+    ts.write_manifest()
