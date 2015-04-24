@@ -1,3 +1,4 @@
 *.sublime-*
 *.pyc
 .coverage
+*.egg-info
