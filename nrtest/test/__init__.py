@@ -4,6 +4,7 @@ import os
 import sys
 import tempfile
 import shutil
+import re
 
 
 class TestFailure(Exception):
@@ -21,8 +22,7 @@ def pre_testsuite_checks(app):
         raise TestFailure('Tests directory not found: "%s"' % app.tests_path)
 
     if not os.path.isdir(app.benchmark_path):
-        raise TestFailure('Benchmark directory not found: "%s"' %
-                          app.benchmark_path)
+        os.makedirs(app.benchmark_path)
 
 
 def pre_test_checks(app, test):
@@ -48,7 +48,14 @@ def run_test(app, test):
         for fname in test.input_files:
             _copy_filepath(fname, app.tests_path, tmpdir)
 
+        # Test-specific benchmark path
+        slug = test.name.strip().replace(' ', '_')
+        slug = re.sub(r'(?u)[^-\w.]', '', slug)
+        if not os.path.isdir(os.path.join(app.benchmark_path, slug)):
+            os.makedirs(os.path.join(app.benchmark_path, slug))
+
         # Perform test
+        test.log_file = os.path.join(slug, test.log_file)
         log_fpath = os.path.join(app.benchmark_path, test.log_file)
         cmd = ' '.join([app.exe] + test.args)
         env = source(app.setup_script)
@@ -60,11 +67,14 @@ def run_test(app, test):
             raise TestFailure('Unable to write log file: "%s"' % test.log_file)
 
         # Copy output files to benchmark directory
+
         for fname in test.output_files:
             try:
-                _copy_filepath(fname, tmpdir, app.benchmark_path)
+                dest_dir = os.path.join(app.benchmark_path, slug)
+                _copy_filepath(fname, tmpdir, dest_dir)
             except IOError:
                 raise TestFailure('Output file not generated: "%s"' % fname)
+        test.output_files = [os.path.join(slug, f) for f in test.output_files]
     finally:
         shutil.rmtree(tmpdir)
 
