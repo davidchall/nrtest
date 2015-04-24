@@ -46,11 +46,7 @@ def run_test(app, test):
     try:
         # Copy input files to working directory
         for fname in test.input_files:
-            folder, _ = os.path.split(fname)
-            dest_dir = os.path.join(tmpdir, folder)
-            if not os.path.isdir(dest_dir):
-                os.makedirs(dest_dir)
-            shutil.copy(os.path.join(app.tests_path, fname), dest_dir)
+            _copy_filepath(fname, app.tests_path, tmpdir)
 
         # Perform test
         log_fpath = os.path.join(app.benchmark_path, test.log_file)
@@ -66,11 +62,7 @@ def run_test(app, test):
         # Copy output files to benchmark directory
         for fname in test.output_files:
             try:
-                folder, _ = os.path.split(fname)
-                dest_dir = os.path.join(app.benchmark_path, folder)
-                if not os.path.isdir(dest_dir):
-                    os.makedirs(dest_dir)
-                shutil.copy(os.path.join(tmpdir, fname), dest_dir)
+                _copy_filepath(fname, tmpdir, app.benchmark_path)
             except IOError:
                 raise TestFailure('Output file not generated: "%s"' % fname)
     finally:
@@ -85,6 +77,19 @@ def run_test(app, test):
         raise TestFailure('Program timed out (duration > %ss)' % app.timeout)
 
     return (dur, perf)
+
+
+def _copy_filepath(path, src_dir, dest):
+    """Copy a relative filepath from src_dir to dest, whilst generating any
+    directories included in the path.
+
+    E.g. copy subdir/foo.txt from dir1/ to dir2/ results in dir2/subdir/foo.txt
+    """
+    folders, _ = os.path.split(path)
+    dest = os.path.join(dest, folders)
+    if not os.path.isdir(dest):
+        os.makedirs(dest)
+    shutil.copy(os.path.join(src_dir, path), dest)
 
 
 def post_test_checks(app, test):
