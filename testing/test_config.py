@@ -69,4 +69,11 @@ def test_generator():
 
     for check in checks:
         for constructor, data in metadata_types.items():
-            yield check, constructor, data
+            yield check, constructor, data.copy()
+
+
+def test_conversion():
+    test = Test.for_test(test_execution)
+    Test.for_compare(test.skim())
+    app = Application.for_test(app_execution)
+    Application.for_compare(app.skim())

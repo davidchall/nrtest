@@ -16,7 +16,7 @@ install:
 # run PEP-8 compliance test and unit tests
 script:
   - pep8 nrtest testing
-  - nosetests testing --verbose --exclude-test=nrtest.test.Test --with-coverage --cover-package=nrtest
+  - nosetests testing --exclude-test=nrtest.test.Test --with-coverage --cover-package=nrtest
 
 # Submit data to coveralls
 after_success:
