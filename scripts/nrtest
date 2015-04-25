@@ -3,29 +3,68 @@
 from nrtest.testsuite import TestSuite
 
 import logging
-import os.path
+from os import listdir
+from os.path import exists, isfile, isdir, join
 from argparse import ArgumentParser
+
+
+def execute(args):
+    for p in args.tests + [args.app]:
+        if not exists(p):
+            logging.error('Could not find path: "%s"' % p)
+
+    test_dirs = [p for p in args.tests if isdir(p)]
+    test_files = [p for p in args.tests if isfile(p)]
+    test_files += [[join(d, p) for p in listdir(d) if p.endswith('.json')]
+                   for d in test_dirs]
+
+    test_files = list(set(test_files))  # remove duplicates
+
+    if len(test_files) == 0:
+        logging.error('Unable to locate any tests')
+
+    ts = TestSuite.read_config(args.app, test_files)
+
+    ts.execute()
+    ts.write_manifest()
+
+
+def compare(args):
+    manifest_new = join(args.new, TestSuite.manifest_fname)
+    manifest_old = join(args.old, TestSuite.manifest_fname)
+
+    ts_new = TestSuite.read_manifest(manifest_new)
+    ts_old = TestSuite.read_manifest(manifest_old)
+
+    ts_new.compare(ts_old)
+
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Numerical regression testing')
-
-    parser.add_argument('app', metavar='app.json',
-                        help='application config card')
-    parser.add_argument('tests', metavar='test.json', nargs='+',
-                        help='test config card')
-
     parser.add_argument('-q', '--quiet', help='suppress normal messages',
                         dest='LOGLEVEL', action='store_const',
                         const=logging.WARNING, default=logging.INFO)
     parser.add_argument('-v', '--verbose', help='output debug messages',
                         dest='LOGLEVEL', action='store_const',
                         const=logging.DEBUG, default=logging.INFO)
+    subparsers = parser.add_subparsers(title='subcommands')
+
+    execute_parser = subparsers.add_parser('execute', help='execute tests')
+    execute_parser.set_defaults(func=execute)
+    execute_parser.add_argument('app', metavar='app.json',
+                                help='application config card')
+    execute_parser.add_argument('tests', metavar='test.json', nargs='+',
+                                help='test config card or directory containing\
+                                such cards')
+
+    compare_parser = subparsers.add_parser('compare', help='compare results')
+    compare_parser.set_defaults(func=compare)
+    compare_parser.add_argument('new', metavar='new_benchmark')
+    compare_parser.add_argument('old', metavar='old_benchmark')
 
     args = parser.parse_args()
 
     LOGFORMAT = '%(levelname)s: %(message)s'
     logging.basicConfig(level=args.LOGLEVEL, format=LOGFORMAT)
 
-    ts = TestSuite.read_config(args.app, args.tests)
-    ts.execute()
-    ts.write_manifest()
+    args.func(args)

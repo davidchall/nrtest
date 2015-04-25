@@ -8,10 +8,11 @@ from nrtest.test import Test
 
 class TestSuite(object):
     """docstring for TestSuite"""
+    manifest_fname = 'manifest.json'
+
     def __init__(self, app, tests=[]):
         self.app = app
         self.tests = tests
-        self.manifest_fname = 'manifest.json'
 
     def write_manifest(self):
         """Writes a JSON manifest containing metadata needed for comparison.
@@ -57,7 +58,7 @@ class TestSuite(object):
         for test in self.tests:
             test.execute(self.app)
 
-    def compare(self):
+    def compare(self, other):
         """Compare test results.
         """
         self._check_compare()
