@@ -1,4 +1,4 @@
-from .__version__ import __version__
+from nrtest.__version__ import __version__
 
 
 class Metadata(dict):
