@@ -1,4 +1,4 @@
-from os import makedirs
+from os import makedirs, environ
 from os.path import exists, isfile, isdir, join, split, splitext
 import tempfile
 import re
@@ -135,7 +135,8 @@ class Test(Metadata):
             # Perform test
             log_fpath = join(output_dir, self.log_file)
             cmd = ' '.join([app.exe] + self.args)
-            env = source(app.setup_script)
+
+            env = source(app.setup_script) if app.setup_script else environ
             try:
                 with open(log_fpath, 'w') as log_file:
                     p = execute(cmd, env=env, cwd=tmpdir, stdout=log_file)

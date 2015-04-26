@@ -63,12 +63,12 @@ class Application(Metadata):
         'name',
         'version',
         'exe',
-        'setup_script',
         'tests_path',
         'benchmark_path',
     ]
     _testing_allows = {
         'description': None,
+        'setup_script': None,
         'timeout': None,
     }
     _compare_requires = [
