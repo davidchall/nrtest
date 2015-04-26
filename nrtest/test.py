@@ -3,6 +3,7 @@ from os.path import exists, isfile, isdir, join, split
 import tempfile
 import re
 import shutil
+import logging
 
 from nrtest import Metadata
 from nrtest.process import source, execute, monitor
@@ -63,6 +64,13 @@ class Test(Metadata):
         self.out_log = 'stdout.log'
         self.err_log = 'stderr.log'
 
+        self.logger = logging.getLogger(self.name)
+        formatter = logging.Formatter('%(levelname)s: %(name)s: %(message)s')
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+        self.logger.propagate = False
+
     def execute(self, app):
         input_dir = app.tests_path
         output_dir = join(app.benchmark_path, self.slug)
@@ -74,11 +82,14 @@ class Test(Metadata):
         except TestFailure as e:
             self.passed = False
             self.error_msg = e.value
+            self.logger.info('failed')
+            self.logger.debug(self.error_msg)
         except KeyboardInterrupt as e:
             print('Process interrupted by user')
         else:
             self.passed = True
             self.error_msg = None
+            self.logger.info('passed')
 
         # Update relative filepath attributes to include slug
         self.out_log = join(self.slug, self.out_log)
