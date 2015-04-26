@@ -1,5 +1,5 @@
 from os import makedirs, environ
-from os.path import exists, isfile, isdir, join, split, splitext
+from os.path import exists, isfile, isdir, join, split
 import tempfile
 import re
 import shutil

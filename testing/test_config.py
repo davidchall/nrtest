@@ -14,6 +14,8 @@ test_comparison = {
     'version': 1.0,
     'description': None,
     'output_files': ['output.txt'],
+    'out_log': 'stdout.log',
+    'err_log': 'stderr.log',
     'passed': True,
     'error_msg': None,
     'duration': 10.0,
