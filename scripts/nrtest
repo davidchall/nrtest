@@ -20,9 +20,6 @@ def execute(args):
 
     test_files = list(set(test_files))  # remove duplicates
 
-    if len(test_files) == 0:
-        logging.error('Unable to locate any tests')
-
     ts = TestSuite.read_config(args.app, test_files)
 
     ts.execute()

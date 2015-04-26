@@ -34,20 +34,20 @@ class TestSuite(object):
         with open(path) as f:
             manifest = json.load(f)
 
-        app = Application.for_compare(manifest['Application'])
-        tests = [Test.for_compare(test) for test in manifest['Tests']]
+        app = Application.for_comparison(manifest['Application'])
+        tests = [Test.for_comparison(test) for test in manifest['Tests']]
 
         return cls(app, tests)
 
     @classmethod
     def read_config(cls, app_fname, test_fnames):
         with open(app_fname) as f:
-            app = Application.for_test(json.load(f))
+            app = Application.for_execution(json.load(f))
 
         tests = []
         for fname in test_fnames:
             with open(fname) as f:
-                tests.append(Test.for_test(json.load(f)))
+                tests.append(Test.for_execution(json.load(f)))
 
         return cls(app, tests)
 

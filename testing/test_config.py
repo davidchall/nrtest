@@ -55,10 +55,10 @@ def check_missing_field(constructor, data):
 
 def test_generator():
     metadata_types = {
-        Test.for_test: test_execution,
-        Test.for_compare: test_comparison,
-        Application.for_test: app_execution,
-        Application.for_compare: app_comparison,
+        Test.for_execution: test_execution,
+        Test.for_comparison: test_comparison,
+        Application.for_execution: app_execution,
+        Application.for_comparison: app_comparison,
     }
 
     checks = [
@@ -73,7 +73,7 @@ def test_generator():
 
 
 def test_conversion():
-    test = Test.for_test(test_execution)
-    Test.for_compare(test.skim())
-    app = Application.for_test(app_execution)
-    Application.for_compare(app.skim())
+    test = Test.for_execution(test_execution)
+    Test.for_comparison(test.skim())
+    app = Application.for_execution(app_execution)
+    Application.for_comparison(app.skim())

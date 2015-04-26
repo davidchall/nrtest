@@ -18,13 +18,13 @@ class Metadata(dict):
         return {k: self.get(k, None) for k in self._compare_requires}
 
     @classmethod
-    def for_test(cls, data):
+    def for_execution(cls, data):
         requires, allows = cls._testing_requires, cls._testing_allows
         cls._validate(data, requires, allows)
         return cls(**data)
 
     @classmethod
-    def for_compare(cls, data):
+    def for_comparison(cls, data):
         requires, allows = cls._compare_requires, {}
         cls._validate(data, requires, allows)
         return cls(**data)
