@@ -13,7 +13,6 @@ test_comparison = {
     'name': 'test',
     'version': 1.0,
     'description': None,
-    'log_file': 'out.log',
     'output_files': ['output.txt'],
     'passed': True,
     'error_msg': None,
@@ -25,7 +24,6 @@ app_execution = {
     'name': 'app',
     'version': 1.0,
     'exe': 'cat',
-    'setup_script': None,
     'tests_path': '/path/to/tests',
     'benchmark_path': '/path/to/benchmarks',
 }

@@ -28,7 +28,6 @@ class Test(Metadata):
 
     Optional fields:
         description
-        log_file [path]
         input_files [list of paths]
         output_files [list of paths]
         fail_strings: list of strings indicating failure in log file
@@ -40,7 +39,6 @@ class Test(Metadata):
     ]
     _testing_allows = {
         'description': None,
-        'log_file': None,
         'input_files': [],
         'output_files': [],
         'fail_strings': [],
@@ -50,7 +48,8 @@ class Test(Metadata):
         'name',
         'version',
         'description',
-        'log_file',
+        'out_log',
+        'err_log',
         'output_files',
         'passed',
         'error_msg',
@@ -61,12 +60,8 @@ class Test(Metadata):
     def __init__(self, *args, **kwargs):
         super(Test, self).__init__(*args, **kwargs)
         self.slug = _slugify(self.name)
-
-        # Default log filename is constructed from parameter filename
-        if not self.log_file:
-            param_fname = max(self.args, key=len)  # Assumed to be longest arg
-            (basename, _) = splitext(param_fname)
-            self.log_file = basename + '.log'
+        self.out_log = 'stdout.log'
+        self.err_log = 'stderr.log'
 
     def execute(self, app):
         input_dir = app.tests_path
@@ -86,7 +81,8 @@ class Test(Metadata):
             self.error_msg = None
 
         # Update relative filepath attributes to include slug
-        self.log_file = join(self.slug, self.log_file)
+        self.out_log = join(self.slug, self.out_log)
+        self.err_log = join(self.slug, self.err_log)
         self.output_files = [join(self.slug, f) for f in self.output_files]
 
     def compare(self):
@@ -101,7 +97,7 @@ class Test(Metadata):
         if not exists(output_dir):
             makedirs(output_dir)
 
-        for fname in self.output_files + [self.log_file]:
+        for fname in self.output_files + [self.out_log, self.err_log]:
             fpath = join(output_dir, fname)
             if exists(fpath):
                 raise TestFailure('Output file already exists: "%s"' % fpath)
@@ -110,11 +106,12 @@ class Test(Metadata):
         # TODO: support regex?
         # TODO: highlight which failure string was found
         if self.fail_strings and len(self.fail_strings) > 0:
-            fpath = join(output_dir, self.log_file)
-            with open(fpath) as f:
-                for line in f:
-                    if any(s in line for s in self.fail_strings):
-                        raise TestFailure('Failure string found in log file')
+            for fname in [self.out_log, self.err_log]:
+                fpath = join(output_dir, fname)
+                with open(fpath) as f:
+                    for line in f:
+                        if any(s in line for s in self.fail_strings):
+                            raise TestFailure('Failure string found in log')
 
         for fname in self.output_files:
             fpath = join(output_dir, fname)
@@ -133,17 +130,20 @@ class Test(Metadata):
                 _copy_filepath(fname, input_dir, tmpdir)
 
             # Perform test
-            log_fpath = join(output_dir, self.log_file)
             cmd = ' '.join([app.exe] + self.args)
-
             env = source(app.setup_script) if app.setup_script else environ
+
             try:
-                with open(log_fpath, 'w') as log_file:
-                    p = execute(cmd, env=env, cwd=tmpdir, stdout=log_file)
-                    (exit_code, dur, perf) = monitor(p, timeout=app.timeout)
+                with open(join(output_dir, self.out_log), 'w') as f_out:
+                    with open(join(output_dir, self.err_log), 'w') as f_err:
+
+                        p = execute(cmd, env=env, cwd=tmpdir,
+                                    stdout=f_out, stderr=f_err)
+
+                        (exitcode, dur, perf) = monitor(p, timeout=app.timeout)
+
             except IOError:
-                raise TestFailure('Unable to write log file: "%s"' %
-                                  self.log_file)
+                raise TestFailure('Unable to write log file')
 
             # Copy output files to benchmark directory
             for fname in self.output_files:
@@ -153,9 +153,9 @@ class Test(Metadata):
         finally:
             shutil.rmtree(tmpdir)
 
-        if exit_code == -11:
+        if exitcode == -11:
             raise TestFailure('Segmentation fault')
-        elif exit_code != 0:
+        elif exitcode != 0:
             raise TestFailure('Non-zero exit code')
 
         if dur is None:
