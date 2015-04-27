@@ -15,10 +15,11 @@ def execute(args):
 
     test_dirs = [p for p in args.tests if isdir(p)]
     test_files = [p for p in args.tests if isfile(p)]
-    test_files += [[join(d, p) for p in listdir(d) if p.endswith('.json')]
-                   for d in test_dirs]
+    test_files += [join(d, p) for d in test_dirs for p in listdir(d)
+                   if p.endswith('.json')]
 
     test_files = list(set(test_files))  # remove duplicates
+    logging.info('Found %i tests' % len(test_files))
 
     ts = TestSuite.read_config(args.app, test_files)
 
