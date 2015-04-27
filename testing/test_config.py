@@ -16,10 +16,10 @@ test_comparison = {
     'output_files': ['output.txt'],
     'out_log': 'stdout.log',
     'err_log': 'stderr.log',
+    'perf_log': 'performance.log',
     'passed': True,
     'error_msg': None,
     'duration': 10.0,
-    'performance': None,
 }
 
 app_execution = {

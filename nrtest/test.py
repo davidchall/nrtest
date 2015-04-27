@@ -4,6 +4,7 @@ import tempfile
 import re
 import shutil
 import logging
+import csv
 from colorama import Fore
 
 from nrtest import Metadata
@@ -52,11 +53,11 @@ class Test(Metadata):
         'description',
         'out_log',
         'err_log',
+        'perf_log',
         'output_files',
         'passed',
         'error_msg',
         'duration',
-        'performance',
     ]
 
     def __init__(self, *args, **kwargs):
@@ -64,6 +65,7 @@ class Test(Metadata):
         self.slug = _slugify(self.name)
         self.out_log = 'stdout.log'
         self.err_log = 'stderr.log'
+        self.perf_log = 'performance.log'
 
         self.logger = logging.getLogger(self.name)
         formatter = logging.Formatter('%(levelname)s: %(name)s: %(message)s')
@@ -94,6 +96,7 @@ class Test(Metadata):
         # Update relative filepath attributes to include slug
         self.out_log = join(self.slug, self.out_log)
         self.err_log = join(self.slug, self.err_log)
+        self.perf_log = join(self.slug, self.perf_log)
         self.output_files = [join(self.slug, f) for f in self.output_files]
 
     def compare(self):
@@ -173,7 +176,11 @@ class Test(Metadata):
             raise TestFailure('Program timed out')
 
         self.duration = dur
-        self.performance = perf
+
+        with open(join(output_dir, self.perf_log), 'w') as f_perf:
+            w = csv.writer(f_perf)
+            w.writerow(perf[0]._fields)
+            w.writerows([meas for meas in perf])
 
 
 def _copy_filepath(rel_path, src_dir, dest):
