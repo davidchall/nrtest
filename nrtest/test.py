@@ -4,6 +4,7 @@ import tempfile
 import re
 import shutil
 import logging
+from colorama import Fore
 
 from nrtest import Metadata
 from nrtest.process import source, execute, monitor
@@ -82,14 +83,14 @@ class Test(Metadata):
         except TestFailure as e:
             self.passed = False
             self.error_msg = e.value
-            self.logger.info('failed')
+            self.logger.info(Fore.RED + 'failed' + Fore.RESET)
             self.logger.debug(self.error_msg)
         except KeyboardInterrupt as e:
             print('Process interrupted by user')
         else:
             self.passed = True
             self.error_msg = None
-            self.logger.info('passed')
+            self.logger.info(Fore.GREEN + 'passed' + Fore.RESET)
 
         # Update relative filepath attributes to include slug
         self.out_log = join(self.slug, self.out_log)
