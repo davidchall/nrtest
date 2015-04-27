@@ -85,8 +85,6 @@ class Test(Metadata):
             self.error_msg = e.value
             self.logger.info(Fore.RED + 'failed' + Fore.RESET)
             self.logger.debug(self.error_msg)
-        except KeyboardInterrupt as e:
-            print('Process interrupted by user')
         else:
             self.passed = True
             self.error_msg = None

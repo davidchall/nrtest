@@ -23,8 +23,11 @@ def execute(args):
 
     ts = TestSuite.read_config(args.app, test_files)
 
-    ts.execute()
-    ts.write_manifest()
+    try:
+        ts.execute()
+        ts.write_manifest()
+    except KeyboardInterrupt:
+        logging.warning('Process interrupted by user')
 
 
 def compare(args):
