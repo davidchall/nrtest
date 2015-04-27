@@ -28,6 +28,8 @@ def execute(args):
         ts.write_manifest()
     except KeyboardInterrupt:
         logging.warning('Process interrupted by user')
+    else:
+        logging.info('Finished')
 
 
 def compare(args):

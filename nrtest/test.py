@@ -77,6 +77,7 @@ class Test(Metadata):
         output_dir = join(app.benchmark_path, self.slug)
 
         try:
+            self.logger.debug('Starting execution')
             self._precheck_execute(input_dir, output_dir)
             self._execute(app, input_dir, output_dir)
             self._postcheck_execute(output_dir)
