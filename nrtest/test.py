@@ -178,9 +178,10 @@ class Test(Metadata):
         self.duration = dur
 
         with open(join(output_dir, self.perf_log), 'w') as f_perf:
-            w = csv.writer(f_perf)
-            w.writerow(perf[0]._fields)
-            w.writerows([meas for meas in perf])
+            if len(perf) > 0:
+                w = csv.writer(f_perf)
+                w.writerow(perf[0]._fields)
+                w.writerows([meas for meas in perf])
 
 
 def _copy_filepath(rel_path, src_dir, dest):
