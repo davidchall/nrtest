@@ -39,7 +39,7 @@ def compare(args):
     ts_new = TestSuite.read_manifest(manifest_new)
     ts_old = TestSuite.read_manifest(manifest_old)
 
-    ts_new.compare(ts_old)
+    ts_new.compare(ts_old, args.new, args.old)
 
 
 if __name__ == '__main__':

@@ -1,5 +1,6 @@
 from os import makedirs, environ
-from os.path import exists, isfile, isdir, join, split
+from os.path import exists, isfile, isdir, join, split, basename
+from six.moves import range
 import tempfile
 import re
 import shutil
@@ -9,6 +10,7 @@ from colorama import Fore
 
 from nrtest import Metadata
 from nrtest.process import source, execute, monitor
+from nrtest.results.csv import NumericCsvResult
 
 
 class TestFailure(Exception):
@@ -99,8 +101,19 @@ class Test(Metadata):
         self.perf_log = join(self.slug, self.perf_log)
         self.output_files = [join(self.slug, f) for f in self.output_files]
 
-    def compare(self):
-        raise NotImplementedError
+    def compare(self, other, self_dir, other_dir):
+        tmp1 = [basename(f) for f in self.output_files]
+        tmp2 = [basename(f) for f in other.output_files]
+        if tmp1 != tmp2:
+            logging.debug('Different output files to benchmark')
+            return 999.9
+
+        for i in range(len(self.output_files)):
+            if self.output_files[i].endswith('.csv'):
+                logging.debug('Comparing "%s"' % self.output_files[i])
+                res1 = NumericCsvResult(join(self_dir, self.output_files[i]))
+                res2 = NumericCsvResult(join(other_dir, other.output_files[i]))
+                print(res1.compare(res2))
 
     def _precheck_execute(self, input_dir, output_dir):
         for fname in self.input_files:

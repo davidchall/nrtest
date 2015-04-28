@@ -58,12 +58,14 @@ class TestSuite(object):
         for test in self.tests:
             test.execute(self.app)
 
-    def compare(self, other):
+    def compare(self, other, self_dir, other_dir):
         """Compare test results.
         """
         self._check_compare()
+        other._check_compare()
+        other_tests = {test.name: test for test in other.tests}
         for test in self.tests:
-            test.compare()
+            test.compare(other_tests[test.name], self_dir, other_dir)
 
     def _check_execute(self):
         tests_path = self.app.tests_path

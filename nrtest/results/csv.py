@@ -35,13 +35,16 @@ class NumericCsvResult(Result):
                     line = csvfile.readline()
                 else:
                     break
-            csvfile.seek(pos)  # return to start of line
 
             # sniff for dialect and a standard csv header line
+            csvfile.seek(pos)
             sample = csvfile.read(1024)
-            self.dialect = Sniffer().sniff(sample)
-            if Sniffer().has_header(sample):
-                self.n_header_lines += 1
+            if len(sample.split()) <= 1:  # only one cell
+                self.dialect = None
+            else:
+                self.dialect = Sniffer().sniff(sample)
+                if Sniffer().has_header(sample):
+                    self.n_header_lines += 1
 
     def compare(self, ref):
         """Compare to a reference result.
@@ -114,7 +117,13 @@ class NumericCsvResult(Result):
                         cell_ref = str(row_ref[i])
 
                     if isinstance(cell, float) and isinstance(cell_ref, float):
-                        delta = abs(cell - cell_ref) / cell_ref
+                        if cell == 0 and cell_ref == 0:
+                            delta = 0.0
+                        elif cell_ref == 0:
+                            delta = 999.9
+                        else:
+                            delta = abs((cell - cell_ref) / cell_ref)
+
                         max_delta = max(delta, max_delta)
                         avg_delta += delta
                         n_cells += 1
@@ -124,5 +133,6 @@ class NumericCsvResult(Result):
                     else:
                         return FAILURE
 
-        avg_delta /= n_cells
+        if n_cells > 0:
+            avg_delta /= n_cells
         return max_delta, avg_delta
