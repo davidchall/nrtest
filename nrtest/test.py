@@ -68,7 +68,7 @@ class Test(Metadata):
         self.perf_log = 'performance.log'
 
         self.logger = logging.getLogger(self.name)
-        formatter = logging.Formatter('%(levelname)s: %(name)s: %(message)s')
+        formatter = logging.Formatter('%(name)s: %(message)s')
         handler = logging.StreamHandler()
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
