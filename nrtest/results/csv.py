@@ -21,7 +21,6 @@ class NumericCsvResult(Result):
         occupied by the header. The header is recognised as lines that begin
         with the # character, or a single line of non-float values.
         """
-        self.dialect = 'excel'
         self.n_header_lines = 0
         with open(self.fpath) as csvfile:
 
@@ -36,15 +35,20 @@ class NumericCsvResult(Result):
                 else:
                     break
 
-            # sniff for dialect and a standard csv header line
+            # is the first line without a hash in fact a header line?
             csvfile.seek(pos)
             sample = csvfile.read(1024)
-            if len(sample.split()) <= 1:  # only one cell
-                self.dialect = None
+            # sniffer confused if there is only one cell
+            if len(sample.split()) <= 1:
+                self.dialect = 'excel'
+            # otherwise use standard python csv sniffer
             else:
-                self.dialect = Sniffer().sniff(sample)
-                if Sniffer().has_header(sample):
-                    self.n_header_lines += 1
+                try:
+                    self.dialect = Sniffer().sniff(sample, ',:;\t ')
+                    if Sniffer().has_header(sample):
+                        self.n_header_lines += 1
+                except CsvError:
+                    self.dialect = 'excel'
 
     def compare(self, ref):
         """Compare to a reference result.
@@ -65,7 +69,7 @@ class NumericCsvResult(Result):
         FAILURE = (999.9, 999.9)
 
         # Requires >=2.7 or >=3.1
-        with open(self.fpath) as f, open(ref.fpath) as f_ref:
+        with open(self.fpath, 'rb') as f, open(ref.fpath, 'rb') as f_ref:
             for _ in range(self.n_header_lines):
                 next(f)
             for _ in range(ref.n_header_lines):
@@ -79,18 +83,20 @@ class NumericCsvResult(Result):
             while n_eofs == 0:
                 try:
                     row = next(rdr)
-                except CsvError:
+                except CsvError as e:
                     msg = 'Problem reading line %d of "%s"'
-                    logging.error(msg % rdr.line_num, self.fpath)
+                    logging.error(msg % (rdr.line_num, self.fpath))
+                    logging.error(e)
                     return FAILURE
                 except StopIteration:
                     n_eofs += 1
 
                 try:
                     row_ref = next(rdr_ref)
-                except CsvError:
+                except CsvError as e:
                     msg = 'Problem reading line %d of "%s"'
-                    logging.error(msg % rdr_ref.line_num, ref.fpath)
+                    logging.error(msg % (rdr_ref.line_num, ref.fpath))
+                    logging.error(e)
                     return FAILURE
                 except StopIteration:
                     n_eofs += 1
