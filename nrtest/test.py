@@ -6,11 +6,14 @@ import re
 import shutil
 import logging
 import csv
-from colorama import Fore
 
 from nrtest import Metadata
 from nrtest.process import source, execute, monitor
 from nrtest.results.csv import NumericCsvResult
+from nrtest.utility import color
+
+PASS = color('passed', 'g')
+FAIL = color('failed', 'r')
 
 
 class TestFailure(Exception):
@@ -89,12 +92,12 @@ class Test(Metadata):
         except TestFailure as e:
             self.passed = False
             self.error_msg = e.value
-            self.logger.info(Fore.RED + 'failed' + Fore.RESET)
+            self.logger.info(FAIL)
             self.logger.debug(self.error_msg)
         else:
             self.passed = True
             self.error_msg = None
-            self.logger.info(Fore.GREEN + 'passed' + Fore.RESET)
+            self.logger.info(PASS)
 
         # Update relative filepath attributes to include slug
         self.out_log = join(self.slug, self.out_log)
@@ -122,9 +125,9 @@ class Test(Metadata):
                 test_max_delta = max(max_delta, test_max_delta)
 
         if test_max_delta > tolerance:
-            self.logger.info(Fore.RED + 'failed' + Fore.RESET)
+            self.logger.info(FAIL)
         else:
-            self.logger.info(Fore.GREEN + 'passed' + Fore.RESET)
+            self.logger.info(PASS)
 
     def _precheck_execute(self, input_dir, output_dir):
         for fname in self.input_files:

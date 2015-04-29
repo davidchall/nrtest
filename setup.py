@@ -19,7 +19,6 @@ setup(
     install_requires=[
         'six',
         'psutil>=2.0',
-        'colorama',
     ],
 
     # metadata for upload to PyPI
