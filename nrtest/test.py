@@ -106,15 +106,25 @@ class Test(Metadata):
         tmp1 = [basename(f) for f in self.output_files]
         tmp2 = [basename(f) for f in other.output_files]
         if tmp1 != tmp2:
-            logging.debug('Different output files to benchmark')
+            self.logger.debug('Different output files to benchmark')
             return 999.9
 
+        tolerance = 0.01
+        test_max_delta = 0.0
         for i in range(len(self.output_files)):
-            if self.output_files[i].endswith('.csv'):
-                logging.debug('Comparing "%s"' % self.output_files[i])
+            name = basename(self.output_files[i])
+            if name.endswith('.csv') or name.endswith('.phsp'):
+                self.logger.debug('Comparing "%s"' % self.output_files[i])
                 res1 = NumericCsvResult(join(self_dir, self.output_files[i]))
                 res2 = NumericCsvResult(join(other_dir, other.output_files[i]))
-                print(res1.compare(res2))
+                max_delta, avg_delta = res1.compare(res2)
+
+                test_max_delta = max(max_delta, test_max_delta)
+
+        if test_max_delta > tolerance:
+            self.logger.info(Fore.RED + 'failed' + Fore.RESET)
+        else:
+            self.logger.info(Fore.GREEN + 'passed' + Fore.RESET)
 
     def _precheck_execute(self, input_dir, output_dir):
         for fname in self.input_files:
