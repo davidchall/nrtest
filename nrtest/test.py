@@ -70,11 +70,12 @@ class Test(Metadata):
         self.perf_log = 'performance.log'
 
         self.logger = logging.getLogger(self.name)
-        formatter = logging.Formatter('%(name)s: %(message)s')
-        handler = logging.StreamHandler()
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
-        self.logger.propagate = False
+        if not self.logger.handlers:
+            formatter = logging.Formatter('%(name)s: %(message)s')
+            handler = logging.StreamHandler()
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+            self.logger.propagate = False
 
     def execute(self, app):
         input_dir = app.tests_path
