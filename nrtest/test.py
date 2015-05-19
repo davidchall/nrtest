@@ -10,6 +10,7 @@ import csv
 from nrtest import Metadata
 from nrtest.process import source, execute, monitor
 from nrtest.results.csv import NumericCsvResult
+from nrtest.results.topas import TopasScorer, TopasPhaseSpace
 from nrtest.utility import color
 
 PASS = color('passed', 'g')
@@ -116,16 +117,31 @@ class Test(Metadata):
         test_max_delta = 0.0
         for i in range(len(self.output_files)):
             name = basename(self.output_files[i])
-            if name.endswith('.csv') or name.endswith('.phsp'):
-                self.logger.debug('Comparing "%s"' % self.output_files[i])
-                path1 = join(self_dir, self.output_files[i])
-                path2 = join(other_dir, other.output_files[i])
-                if not isfile(path1) or not isfile(path2):
-                    max_delta, avg_delta = 999.9, 999.9
+            # if name.endswith('.csv') or name.endswith('.phsp'):
+            #     self.logger.debug('Comparing "%s"' % self.output_files[i])
+            #     path1 = join(self_dir, self.output_files[i])
+            #     path2 = join(other_dir, other.output_files[i])
+            #     if not isfile(path1) or not isfile(path2):
+            #         max_delta, avg_delta = 999.9, 999.9
+            #     else:
+            #         res1 = NumericCsvResult(path1)
+            #         res2 = NumericCsvResult(path2)
+            #         max_delta, avg_delta = res1.compare(res2)
+
+            #     test_max_delta = max(max_delta, test_max_delta)
+
+            self.logger.debug('Comparing "%s"' % self.output_files[i])
+            path1 = join(self_dir, self.output_files[i])
+            path2 = join(other_dir, other.output_files[i])
+            if not isfile(path1) or not isfile(path2):
+                max_delta, avg_delta = 999.9, 999.9
+            else:
+                if name.endswith('.csv'):
+                    max_delta, avg_delta = TopasScorer.compare(path1, path2)
+                elif name.endswith('.phsp'):
+                    max_delta, avg_delta = TopasPhaseSpace.compare(path1, path2)
                 else:
-                    res1 = NumericCsvResult(path1)
-                    res2 = NumericCsvResult(path2)
-                    max_delta, avg_delta = res1.compare(res2)
+                    max_delta, avg_delta = 0.0, 0.0
 
                 test_max_delta = max(max_delta, test_max_delta)
 
