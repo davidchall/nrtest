@@ -135,8 +135,12 @@ class NumericCsvResult(Result):
                         n_cells += 1
                     elif isinstance(cell, str) and isinstance(cell_ref, str):
                         if cell.strip() != cell_ref.strip():
+                            msg = 'String mismatch found on line %i of "%s"'
+                            logging.debug(msg % (i+1, self.fpath))
                             return FAILURE
                     else:
+                        msg = 'Incompatible value types on line %i of "%s"'
+                        logging.debug(msg % (i+1, self.fpath))
                         return FAILURE
 
         if n_cells > 0:
