@@ -1,12 +1,13 @@
 import numpy as np
 
-from . import BaseDiff, DiffException
+from .factory import register, NumericDiff, DiffException
 
 
-class NumericArrayDiff(BaseDiff):
+@register('array')
+class ArrayDiff(NumericDiff):
 
     def __init__(self, *args, **kwargs):
-        super(NumericArrayDiff, self).__init__(*args, **kwargs)
+        super(ArrayDiff, self).__init__(*args, **kwargs)
 
         self.data_t = self._read_file(self.path_t)
         self.data_r = self._read_file(self.path_r)
@@ -32,7 +33,8 @@ class NumericArrayDiff(BaseDiff):
         return np.mean(self.diff)
 
 
-class CsvDiff(NumericArrayDiff):
+@register('csv')
+class CsvDiff(ArrayDiff):
 
     def __init__(self, *args, **kwargs):
         super(CsvDiff, self).__init__(*args, **kwargs)
@@ -41,10 +43,11 @@ class CsvDiff(NumericArrayDiff):
         return np.loadtxt(path, delimiter=',', ndmin=1)
 
 
-class BinaryNumericArrayDiff(NumericArrayDiff):
+@register('bin')
+class BinaryArrayDiff(ArrayDiff):
 
     def __init__(self, *args, **kwargs):
-        super(BinaryNumericArrayDiff, self).__init__(*args, **kwargs)
+        super(BinaryArrayDiff, self).__init__(*args, **kwargs)
 
     def _read_file(self, path):
         return np.fromfile(path)

@@ -9,8 +9,9 @@ import csv
 
 from . import Metadata
 from .process import source, execute, monitor
+from .diff import factory
 from .diff import DiffException, DefaultDiff
-from .diff.numeric import CsvDiff, NumericArrayDiff, BinaryNumericArrayDiff
+from .diff.array import CsvDiff, ArrayDiff, BinaryArrayDiff
 from .utility import color
 
 PASS = color('passed', 'g')
@@ -125,16 +126,16 @@ class Test(Metadata):
             else:
                 try:
                     if name.endswith('.csv'):
-                        diff = CsvDiff(path1, path2)
+                        diff = factory('csv')(path1, path2)
                         max_delta = diff.max()
                     elif 'binary' in name and name.endswith('.phsp'):
-                        diff = BinaryNumericArrayDiff(path1, path2)
+                        diff = factory('bin')(path1, path2)
                         max_delta = diff.max()
                     elif name.endswith('.phsp'):
-                        diff = NumericArrayDiff(path1, path2)
+                        diff = factory('array')(path1, path2)
                         max_delta = diff.max()
                     elif name.endswith('eps'):
-                        diff = DefaultDiff(path1, path2)
+                        diff = factory('default')(path1, path2)
                         max_delta = diff.max()
                     else:
                         max_delta = 0.0

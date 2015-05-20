@@ -1,7 +1,8 @@
-from . import BaseDiff
+from .factory import register, NumericDiff
 
 
-class DurationDiff(BaseDiff):
+@register('duration')
+class DurationDiff(NumericDiff):
     """Compare to a reference result. The comparison is one-sided because only
     an increase in duration is considered a failure.
     """
