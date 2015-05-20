@@ -19,6 +19,7 @@ setup(
     install_requires=[
         'six',
         'psutil>=2.0',
+        'numpy>=1.6.0',
     ],
 
     # metadata for upload to PyPI
