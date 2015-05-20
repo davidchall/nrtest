@@ -26,22 +26,16 @@ def factory(alias):
 
 
 class DiffException(Exception):
+    """Raised if an error occurs during the diff (e.g. a file doesn't exist),
+    or if the files are incomparable (e.g. arrays with different shapes).
+    """
     pass
 
 
 class BaseDiff(object):
     """Abstract base class that enables comparison of two result files.
     """
-
-    numeric = False
-
     def __init__(self, path_test, path_ref):
-        """Args:
-            path_test: path to result file under test
-            path_ref:  path to reference result file
-        """
-        super(BaseDiff, self).__init__()
-
         if not isfile(path_test):
             raise DiffException('Unable to locate: "%s"' % path_test)
         if not isfile(path_ref):
@@ -50,7 +44,15 @@ class BaseDiff(object):
         self.path_t = path_test
         self.path_r = path_ref
 
-    def passed(self):
+
+class BooleanDiff(BaseDiff):
+
+    numeric = False
+
+    def __init__(self, *args, **kwargs):
+        super(BooleanDiff, self).__init__(*args, **kwargs)
+
+    def fail(self):
         raise NotImplementedError('abstract method')
 
 

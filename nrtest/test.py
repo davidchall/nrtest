@@ -116,38 +116,44 @@ class Test(Metadata):
 
         tolerance = 0.01
         test_max_delta = 0.0
-        for i in range(len(self.output_files)):
-            name = basename(self.output_files[i])
-            self.logger.debug('Comparing "%s"' % self.output_files[i])
-            path1 = join(self_dir, self.output_files[i])
-            path2 = join(other_dir, other.output_files[i])
-            if not isfile(path1) or not isfile(path2):
-                max_delta = 999.9
-            else:
+        try:
+            for i in range(len(self.output_files)):
+                name = basename(self.output_files[i])
+                path1 = join(self_dir, self.output_files[i])
+                path2 = join(other_dir, other.output_files[i])
+
                 try:
                     if name.endswith('.csv'):
                         diff = factory('csv')(path1, path2)
-                        max_delta = diff.max()
                     elif 'binary' in name and name.endswith('.phsp'):
                         diff = factory('bin')(path1, path2)
-                        max_delta = diff.max()
                     elif name.endswith('.phsp'):
                         diff = factory('array')(path1, path2)
-                        max_delta = diff.max()
                     elif name.endswith('eps'):
                         diff = factory('default')(path1, path2)
-                        max_delta = diff.max()
                     else:
-                        max_delta = 0.0
-                except DiffException:
-                    max_delta = 999
+                        diff = None
+                except DiffException as e:
+                    raise TestFailure(str(e))
 
-                test_max_delta = max(max_delta, test_max_delta)
+                if diff is None:
+                    continue
+                if not diff.numeric:
+                    if diff.fail():
+                        raise TestFailure('Incompatible file: "%s"' % name)
+                else:
+                    test_max_delta = max(test_max_delta, diff.max())
 
-        if test_max_delta > tolerance:
-            self.logger.info(color('{:.2%}'.format(test_max_delta), 'r'))
+        except TestFailure as e:
+            self.logger.debug(str(e))
+            self.logger.info(FAIL)
+
         else:
-            self.logger.info(color('{:.2%}'.format(test_max_delta), 'g'))
+            grade = '{:.2%}'.format(test_max_delta)
+            if test_max_delta > tolerance:
+                self.logger.info(color(grade, 'r'))
+            else:
+                self.logger.info(color(grade, 'g'))
 
     def _precheck_execute(self, input_dir, output_dir):
         for fname in self.input_files:
