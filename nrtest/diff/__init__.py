@@ -44,7 +44,7 @@ class DefaultDiff(BaseDiff):
     def __init__(self, *args, **kwargs):
         super(DefaultDiff, self).__init__(*args, **kwargs)
 
-        self.diff = filecmp.cmp(self.path_t, self.path_r)
+        self.diff = filecmp.cmp(self.path_t, self.path_r, shallow=False)
 
     def max(self):
         return 0 if self.diff else 999.9
