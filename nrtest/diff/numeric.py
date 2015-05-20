@@ -1,9 +1,9 @@
 import numpy as np
 
-from nrtest.results import ResultDiff, ResultDiffException
+from . import BaseDiff, DiffException
 
 
-class NumericArrayDiff(ResultDiff):
+class NumericArrayDiff(BaseDiff):
 
     def __init__(self, *args, **kwargs):
         super(NumericArrayDiff, self).__init__(*args, **kwargs)
@@ -12,7 +12,7 @@ class NumericArrayDiff(ResultDiff):
         self.data_r = self._read_file(self.path_r)
 
         if self.data_t.shape != self.data_r.shape:
-            raise ResultDiffException('Inconsistent array shape')
+            raise DiffException('Inconsistent array shape')
 
         np.seterr(divide='ignore', invalid='ignore')
         self.diff = (self.data_t - self.data_r) / self.data_r
