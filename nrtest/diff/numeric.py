@@ -15,7 +15,7 @@ class NumericArrayDiff(BaseDiff):
             raise DiffException('Inconsistent array shape')
 
         np.seterr(divide='ignore', invalid='ignore')
-        self.diff = (self.data_t - self.data_r) / self.data_r
+        self.diff = np.absolute((self.data_t - self.data_r) / self.data_r)
         both_zero_ind = np.nonzero((self.data_t == 0) & (self.data_r == 0))
         self.diff[both_zero_ind] = 0
 
