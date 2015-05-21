@@ -43,7 +43,7 @@ class CsvDiff(ArrayDiff):
         return np.loadtxt(path, delimiter=',', ndmin=1)
 
 
-@register('bin')
+@register('binarray')
 class BinaryArrayDiff(ArrayDiff):
 
     def __init__(self, *args, **kwargs):

@@ -1,5 +1,5 @@
 from os import makedirs, environ
-from os.path import exists, isfile, isdir, join, split, basename
+from os.path import exists, isfile, isdir, join, split
 from six.moves import range
 import tempfile
 import re
@@ -9,7 +9,6 @@ import csv
 
 from . import Metadata
 from .process import source, execute, monitor
-from .diff import factory, DiffException
 from .utility import color
 
 PASS = color('passed', 'g')
@@ -37,7 +36,7 @@ class Test(Metadata):
     Optional fields:
         description
         input_files [list of paths]
-        output_files [list of paths]
+        output_files [dict of paths and result types]
         fail_strings: list of strings indicating failure in log file
     """
     _testing_requires = [
@@ -48,7 +47,7 @@ class Test(Metadata):
     _testing_allows = {
         'description': None,
         'input_files': [],
-        'output_files': [],
+        'output_files': {},
         'fail_strings': [],
         'timeout': None,
     }
@@ -56,6 +55,7 @@ class Test(Metadata):
         'name',
         'version',
         'description',
+        'dir',
         'out_log',
         'err_log',
         'perf_log',
@@ -67,7 +67,7 @@ class Test(Metadata):
 
     def __init__(self, *args, **kwargs):
         super(Test, self).__init__(*args, **kwargs)
-        self.slug = _slugify(self.name)
+        self.dir = _slugify(self.name)
         self.out_log = 'stdout.log'
         self.err_log = 'stderr.log'
         self.perf_log = 'performance.log'
@@ -82,7 +82,7 @@ class Test(Metadata):
 
     def execute(self, app):
         input_dir = app.tests_path
-        output_dir = join(app.benchmark_path, self.slug)
+        output_dir = join(app.benchmark_path, self.dir)
 
         try:
             self.logger.debug('Starting execution')
@@ -99,57 +99,7 @@ class Test(Metadata):
             self.error_msg = None
             self.logger.info(PASS)
 
-        # Update relative filepath attributes to include slug
-        self.out_log = join(self.slug, self.out_log)
-        self.err_log = join(self.slug, self.err_log)
-        self.perf_log = join(self.slug, self.perf_log)
-        self.output_files = [join(self.slug, f) for f in self.output_files]
-
-    def compare(self, other, self_dir, other_dir, tolerance=0.01):
-        try:
-            tmp1 = [basename(f) for f in self.output_files]
-            tmp2 = [basename(f) for f in other.output_files]
-            if tmp1 != tmp2:
-                raise TestFailure('Different output files to benchmark')
-
-            test_max_delta = 0.0
-            for i in range(len(self.output_files)):
-                name = basename(self.output_files[i])
-                path1 = join(self_dir, self.output_files[i])
-                path2 = join(other_dir, other.output_files[i])
-
-                try:
-                    if name.endswith('.csv'):
-                        diff = factory('csv')(path1, path2)
-                    elif 'binary' in name and name.endswith('.phsp'):
-                        diff = factory('bin')(path1, path2)
-                    elif name.endswith('.phsp'):
-                        diff = factory('array')(path1, path2)
-                    elif name.endswith('eps'):
-                        diff = factory('default')(path1, path2)
-                    else:
-                        diff = None
-                except DiffException as e:
-                    raise TestFailure(str(e))
-
-                if diff is None:
-                    continue
-                if not diff.numeric:
-                    if diff.fail():
-                        raise TestFailure('Incompatible file: "%s"' % name)
-                else:
-                    test_max_delta = max(test_max_delta, diff.max())
-
-        except TestFailure as e:
-            self.logger.debug(str(e))
-            self.logger.info(FAIL)
-
-        else:
-            grade = '{:.2%}'.format(test_max_delta)
-            if test_max_delta > tolerance:
-                self.logger.info(color(grade, 'r'))
-            else:
-                self.logger.info(color(grade, 'g'))
+        return self.passed
 
     def _precheck_execute(self, input_dir, output_dir):
         for fname in self.input_files:
@@ -160,7 +110,7 @@ class Test(Metadata):
         if not exists(output_dir):
             makedirs(output_dir)
 
-        for fname in self.output_files + [self.out_log, self.err_log]:
+        for fname in self.output_files.keys() + [self.out_log, self.err_log]:
             fpath = join(output_dir, fname)
             if exists(fpath):
                 raise TestFailure('Output file already exists: "%s"' % fpath)

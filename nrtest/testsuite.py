@@ -54,30 +54,34 @@ class TestSuite(object):
     def execute(self):
         """Executes tests.
         """
-        self._check_execute()
-        for test in self.tests:
-            test.execute(self.app)
+        try:
+            self._check_execute()
+        except Exception as e:
+            logging.error(str(e))
+            return False
 
-    def compare(self, other, self_dir, other_dir):
-        """Compare test results.
-        """
-        self._check_compare()
-        other._check_compare()
-        other_tests = {test.name: test for test in other.tests}
-        for test in self.tests:
-            test.compare(other_tests[test.name], self_dir, other_dir)
+        success = True
+        for test in sorted(self.tests):
+            if not test.execute(self.app):
+                success = False
+
+        return success
 
     def _check_execute(self):
         tests_path = self.app.tests_path
         if not os.path.isdir(tests_path):
-            logging.error('Tests directory not found: "%s"' % tests_path)
+            raise Exception('Tests directory not found: "%s"' % tests_path)
 
         bench_path = self.app.benchmark_path
         if os.path.exists(bench_path):
-            logging.error('Benchmark directory already exists: "%s"' %
-                          bench_path)
+            raise Exception('Benchmark directory already exists: "%s"' %
+                            bench_path)
         else:
             os.makedirs(bench_path)
 
-    def _check_compare(self):
-        pass
+    def validate_for_compare(self):
+        if not hasattr(self, 'dir'):
+            raise Exception('Benchmark directory not specified')
+        if not os.path.isdir(self.dir):
+            msg = 'Benchmark directory does not exist: "%s"' % self.dir
+            raise Exception(msg)

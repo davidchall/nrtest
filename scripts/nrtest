@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
-from nrtest.testsuite import TestSuite
-
+# system imports
 import logging
 from os import listdir
 from os.path import exists, isfile, isdir, join
 from argparse import ArgumentParser
+from sys import exit
+
+# nrtest imports
+from nrtest.testsuite import TestSuite
+from nrtest.compare import compare_testsuite
 
 
 def execute(args):
@@ -24,12 +28,16 @@ def execute(args):
     ts = TestSuite.read_config(args.app, test_files)
 
     try:
-        ts.execute()
+        success = ts.execute()
         ts.write_manifest()
     except KeyboardInterrupt:
         logging.warning('Process interrupted by user')
+        success = False
     else:
         logging.info('Finished')
+
+    # Non-zero exit code indicates failure
+    exit(not success)
 
 
 def compare(args):
@@ -39,7 +47,13 @@ def compare(args):
     ts_new = TestSuite.read_manifest(manifest_new)
     ts_old = TestSuite.read_manifest(manifest_old)
 
-    ts_new.compare(ts_old, args.new, args.old)
+    ts_new.dir = args.new
+    ts_old.dir = args.old
+
+    compatible = compare_testsuite(ts_new, ts_old, args.tolerance)
+
+    # Non-zero exit code indicates failure
+    exit(not compatible)
 
 
 if __name__ == '__main__':
@@ -64,6 +78,9 @@ if __name__ == '__main__':
     compare_parser.set_defaults(func=compare)
     compare_parser.add_argument('new', metavar='new_benchmark')
     compare_parser.add_argument('old', metavar='old_benchmark')
+    compare_parser.add_argument('-t', '--tolerance', default=0.01,
+                                help='Relative precision at which results \
+                                considered compatible')
 
     args = parser.parse_args()
 
