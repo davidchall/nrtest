@@ -9,9 +9,7 @@ import csv
 
 from . import Metadata
 from .process import source, execute, monitor
-from .diff import factory
-from .diff import DiffException, DefaultDiff
-from .diff.array import CsvDiff, ArrayDiff, BinaryArrayDiff
+from .diff import factory, DiffException
 from .utility import color
 
 PASS = color('passed', 'g')
@@ -107,16 +105,14 @@ class Test(Metadata):
         self.perf_log = join(self.slug, self.perf_log)
         self.output_files = [join(self.slug, f) for f in self.output_files]
 
-    def compare(self, other, self_dir, other_dir):
-        tmp1 = [basename(f) for f in self.output_files]
-        tmp2 = [basename(f) for f in other.output_files]
-        if tmp1 != tmp2:
-            self.logger.debug('Different output files to benchmark')
-            return 999.9
-
-        tolerance = 0.01
-        test_max_delta = 0.0
+    def compare(self, other, self_dir, other_dir, tolerance=0.01):
         try:
+            tmp1 = [basename(f) for f in self.output_files]
+            tmp2 = [basename(f) for f in other.output_files]
+            if tmp1 != tmp2:
+                raise TestFailure('Different output files to benchmark')
+
+            test_max_delta = 0.0
             for i in range(len(self.output_files)):
                 name = basename(self.output_files[i])
                 path1 = join(self_dir, self.output_files[i])
