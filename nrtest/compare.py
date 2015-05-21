@@ -85,19 +85,19 @@ def compare_test(test_sut, test_ref, tolerance):
             try:
                 diff = factory(ftype)(path_sut, path_ref)
             except DiffException as e:
-                raise CompareException(str(e))
+                raise CompareException('%s: %s' % (fname, str(e)))
 
             if diff is None:
                 continue
             if not diff.numeric:
                 if diff.fail():
-                    raise CompareException('Incompatible file: "%s"' % fname)
+                    raise CompareException('%s: boolean diff failed' % fname)
             else:
                 max_diff = max(max_diff, diff.max())
 
     except CompareException as e:
-        logger.debug('%s: %s' % (test_sut.name, str(e)))
         logger.info(color('fail', 'r'))
+        logger.debug(str(e))
         compatible = False
 
     else:
