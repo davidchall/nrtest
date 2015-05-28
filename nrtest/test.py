@@ -53,7 +53,7 @@ class Test(Metadata):
         'name',
         'version',
         'description',
-        'dir',
+        'subdir',
         'out_log',
         'err_log',
         'perf_log',
@@ -65,7 +65,7 @@ class Test(Metadata):
 
     def __init__(self, *args, **kwargs):
         super(Test, self).__init__(*args, **kwargs)
-        self.dir = _slugify(self.name)
+        self.subdir = _slugify(self.name)
         self.out_log = 'stdout.log'
         self.err_log = 'stderr.log'
         self.perf_log = 'performance.log'
@@ -79,8 +79,8 @@ class Test(Metadata):
             self.logger.propagate = False
 
     def execute(self, app, benchmark_path):
-        input_dir = app.tests_path
-        output_dir = join(benchmark_path, self.dir)
+        input_dir = self.input_dir
+        output_dir = join(benchmark_path, self.subdir)
 
         try:
             self.logger.debug('Starting execution')
@@ -98,6 +98,21 @@ class Test(Metadata):
             self.logger.info(PASS)
 
         return self.passed
+
+    def valid_for_execute(self):
+        if not hasattr(self, 'input_dir'):
+            logging.error('Test input directory not specified')
+            return False
+
+        p = self.input_dir
+        if not isdir(p):
+            logging.error('Tests directory not found: "%s"' % p)
+            return False
+
+        return True
+
+    def valid_for_compare(self):
+        return True
 
     def _precheck_execute(self, input_dir, output_dir):
         for fname in self.input_files:

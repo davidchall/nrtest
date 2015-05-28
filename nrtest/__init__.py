@@ -52,7 +52,6 @@ class Application(Metadata):
         version
         exe: executable [path]
         setup_script: environment setup script [path]
-        tests_path [path]
 
     Optional fields:
         description
@@ -62,7 +61,6 @@ class Application(Metadata):
         'name',
         'version',
         'exe',
-        'tests_path',
     ]
     _testing_allows = {
         'description': None,

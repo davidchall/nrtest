@@ -40,7 +40,9 @@ class TestSuite(object):
         tests = []
         for p in test_config_paths:
             with open(p) as f:
-                tests.append(Test.for_execution(json.load(f)))
+                test = Test.for_execution(json.load(f))
+                test.input_dir = os.path.dirname(p)
+                tests.append(test)
 
         return cls(app, tests, benchmark_path)
 
@@ -84,17 +86,16 @@ class TestSuite(object):
         If this returns false, the nrtest script shall exit before executing
         any tests.
         """
-        p = self.app.tests_path
-        if not os.path.isdir(p):
-            logging.error('Tests directory not found: "%s"' % p)
-            return False
-
         p = self.benchmark_path
         if os.path.exists(p):
             logging.error('Benchmark directory already exists: "%s"' % p)
             return False
         else:
             os.makedirs(p)
+
+        for test in self.tests:
+            if not test.valid_for_execute():
+                return False
 
         return True
 
@@ -109,5 +110,9 @@ class TestSuite(object):
         if not os.path.isdir(p):
             logging.error('Benchmark directory not found: "%s"' % p)
             return False
+
+        for test in self.tests:
+            if not test.valid_for_compare():
+                return False
 
         return True

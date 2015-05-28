@@ -38,8 +38,8 @@ def compare_testsuite(ts_sut, ts_ref, tolerance):
         test_sut = tests_sut[name]
         test_ref = tests_ref[name]
 
-        test_sut.dir = join(ts_sut.benchmark_path, test_sut.dir)
-        test_ref.dir = join(ts_ref.benchmark_path, test_ref.dir)
+        test_sut.subdir = join(ts_sut.benchmark_path, test_sut.subdir)
+        test_ref.subdir = join(ts_ref.benchmark_path, test_ref.subdir)
 
         if not compare_test(test_sut, test_ref, tolerance):
             compatible = False
@@ -73,8 +73,8 @@ def compare_test(test_sut, test_ref, tolerance):
         # return False immediately if any are incompatible
         max_diff = 0.0
         for fname, ftype in test_sut.output_files.iteritems():
-            path_sut = join(test_sut.dir, fname)
-            path_ref = join(test_ref.dir, fname)
+            path_sut = join(test_sut.subdir, fname)
+            path_ref = join(test_ref.subdir, fname)
 
             try:
                 diff = factory(ftype)(path_sut, path_ref)
