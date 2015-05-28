@@ -1,4 +1,4 @@
-from nrtest.__version__ import __version__
+from .__version__ import __version__
 
 
 class Metadata(dict):
@@ -53,7 +53,6 @@ class Application(Metadata):
         exe: executable [path]
         setup_script: environment setup script [path]
         tests_path [path]
-        benchmark_path [path]
 
     Optional fields:
         description
@@ -64,7 +63,6 @@ class Application(Metadata):
         'version',
         'exe',
         'tests_path',
-        'benchmark_path',
     ]
     _testing_allows = {
         'description': None,

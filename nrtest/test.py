@@ -1,6 +1,5 @@
 from os import makedirs, environ
 from os.path import exists, isfile, isdir, join, split
-from six.moves import range
 import tempfile
 import re
 import shutil
@@ -49,7 +48,6 @@ class Test(Metadata):
         'input_files': [],
         'output_files': {},
         'fail_strings': [],
-        'timeout': None,
     }
     _compare_requires = [
         'name',
@@ -80,9 +78,9 @@ class Test(Metadata):
             self.logger.addHandler(handler)
             self.logger.propagate = False
 
-    def execute(self, app):
+    def execute(self, app, benchmark_path):
         input_dir = app.tests_path
-        output_dir = join(app.benchmark_path, self.dir)
+        output_dir = join(benchmark_path, self.dir)
 
         try:
             self.logger.debug('Starting execution')

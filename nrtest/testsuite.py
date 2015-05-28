@@ -1,7 +1,9 @@
+# system imports
 import logging
 import json
 import os.path
 
+# nrtest imports
 from nrtest import Application
 from nrtest.test import Test
 
@@ -10,78 +12,102 @@ class TestSuite(object):
     """docstring for TestSuite"""
     manifest_fname = 'manifest.json'
 
-    def __init__(self, app, tests=[]):
+    def __init__(self, app, tests, benchmark_path):
+        """Constructs an instance of the TestSuite class.
+
+        Args:
+            app: Application object
+            tests: list of Test objects
+            benchmark_path: path to the benchmark directory
+        """
         self.app = app
         self.tests = tests
+        self.benchmark_path = benchmark_path
+
+    @classmethod
+    def read_config(cls, app_config_path, test_config_paths, benchmark_path):
+        """Constructs a TestSuite instance from a set of JSON config files,
+        which is suitable for execute commands.
+
+        Args:
+            app_config_path: path to application config file
+            test_config_paths: list of paths to test config files
+            benchmark_path: path to output directory
+        """
+        with open(app_config_path) as f:
+            app = Application.for_execution(json.load(f))
+
+        tests = []
+        for p in test_config_paths:
+            with open(p) as f:
+                tests.append(Test.for_execution(json.load(f)))
+
+        return cls(app, tests, benchmark_path)
+
+    @classmethod
+    def read_benchmark(cls, benchmark_path):
+        """Constructs a TestSuite instance from a benchmark directory,
+        which is suitable for compare commands.
+
+        This reads metadata from a JSON manifest, and constructs the
+        Application instance and each of the Test instances.
+        """
+        manifest_path = os.path.join(benchmark_path, cls.manifest_fname)
+        with open(manifest_path) as f:
+            manifest = json.load(f)
+
+        app = Application.for_comparison(manifest['Application'])
+        tests = [Test.for_comparison(test) for test in manifest['Tests']]
+
+        return cls(app, tests, benchmark_path)
 
     def write_manifest(self):
-        """Writes a JSON manifest containing metadata needed for comparison.
+        """Writes a JSON manifest containing application and test metadata
+        needed for compare commands.
+
+        Output format must remain compatible with the read_benchmark() method.
         """
         manifest = {
             'Application': self.app.skim(),
             'Tests': [test.skim() for test in self.tests]
         }
 
-        path = os.path.join(self.app.benchmark_path, self.manifest_fname)
+        path = os.path.join(self.benchmark_path, self.manifest_fname)
         with open(path, 'w') as f:
             json.dump(manifest, f, sort_keys=True, indent=4,
                       separators=(',', ': '))
 
-    @classmethod
-    def read_manifest(cls, path):
-        """Reads a JSON manifest and returns a TestSuite instance.
+    def valid_for_execute(self):
+        """Validates the presence of files and directories needed for execute
+        commands.
+
+        If this returns false, the nrtest script shall exit before executing
+        any tests.
         """
-        with open(path) as f:
-            manifest = json.load(f)
-
-        app = Application.for_comparison(manifest['Application'])
-        tests = [Test.for_comparison(test) for test in manifest['Tests']]
-
-        return cls(app, tests)
-
-    @classmethod
-    def read_config(cls, app_fname, test_fnames):
-        with open(app_fname) as f:
-            app = Application.for_execution(json.load(f))
-
-        tests = []
-        for fname in test_fnames:
-            with open(fname) as f:
-                tests.append(Test.for_execution(json.load(f)))
-
-        return cls(app, tests)
-
-    def execute(self):
-        """Executes tests.
-        """
-        try:
-            self._check_execute()
-        except Exception as e:
-            logging.error(str(e))
+        p = self.app.tests_path
+        if not os.path.isdir(p):
+            logging.error('Tests directory not found: "%s"' % p)
             return False
 
-        success = True
-        for test in sorted(self.tests):
-            if not test.execute(self.app):
-                success = False
-
-        return success
-
-    def _check_execute(self):
-        tests_path = self.app.tests_path
-        if not os.path.isdir(tests_path):
-            raise Exception('Tests directory not found: "%s"' % tests_path)
-
-        bench_path = self.app.benchmark_path
-        if os.path.exists(bench_path):
-            raise Exception('Benchmark directory already exists: "%s"' %
-                            bench_path)
+        p = self.benchmark_path
+        if os.path.exists(p):
+            logging.error('Benchmark directory already exists: "%s"' % p)
+            return False
         else:
-            os.makedirs(bench_path)
+            os.makedirs(p)
 
-    def validate_for_compare(self):
-        if not hasattr(self, 'dir'):
-            raise Exception('Benchmark directory not specified')
-        if not os.path.isdir(self.dir):
-            msg = 'Benchmark directory does not exist: "%s"' % self.dir
-            raise Exception(msg)
+        return True
+
+    def valid_for_compare(self):
+        """Validates the presence of files and directories needed for compare
+        commands.
+
+        If this returns false, the nrtest script shall exit before comparing
+        any tests.
+        """
+        p = self.benchmark_path
+        if not os.path.isdir(p):
+            logging.error('Benchmark directory not found: "%s"' % p)
+            return False
+
+        return True

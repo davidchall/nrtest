@@ -28,7 +28,6 @@ app_execution = {
     'version': 1.0,
     'exe': 'cat',
     'tests_path': '/path/to/tests',
-    'benchmark_path': '/path/to/benchmarks',
 }
 
 app_comparison = {

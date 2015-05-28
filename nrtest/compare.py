@@ -12,22 +12,17 @@ class CompareException(Exception):
 
 
 def compare_testsuite(ts_sut, ts_ref, tolerance):
-    """Compare testsuite results against a benchmark.
+    """Compare the results of a testsuite against a benchmark.
 
     Args:
         ts_sut: SUT testsuite
-        ts_ref: benchamrk testsuite
+        ts_ref: benchmark testsuite
         tolerance: relative precision at which results considered compatible
 
-    Returns:
-        Boolean: whether results are compatible
+    Returns: boolean compatibility
     """
     # check each testsuite is individually valid before beginning
-    try:
-        ts_sut.validate_for_compare()
-        ts_ref.validate_for_compare()
-    except Exception as e:
-        logging.error(str(e))
+    if not ts_sut.valid_for_compare() or not ts_ref.valid_for_compare():
         return False
 
     # check testsuites are comparable
@@ -43,8 +38,8 @@ def compare_testsuite(ts_sut, ts_ref, tolerance):
         test_sut = tests_sut[name]
         test_ref = tests_ref[name]
 
-        test_sut.dir = join(ts_sut.dir, test_sut.dir)
-        test_ref.dir = join(ts_ref.dir, test_ref.dir)
+        test_sut.dir = join(ts_sut.benchmark_path, test_sut.dir)
+        test_ref.dir = join(ts_ref.benchmark_path, test_ref.dir)
 
         if not compare_test(test_sut, test_ref, tolerance):
             compatible = False
@@ -53,15 +48,14 @@ def compare_testsuite(ts_sut, ts_ref, tolerance):
 
 
 def compare_test(test_sut, test_ref, tolerance):
-    """Compare test results against a benchmark.
+    """Compare the results of a single test against a benchmark.
 
     Args:
         test_sut: SUT test
         test_ref: benchmark test
         tolerance: relative precision at which results considered compatible
 
-    Returns:
-        Boolean: whether results are compatible
+    Returns: boolean compatibility
     """
     logger = logging.getLogger(test_sut.name)
 
