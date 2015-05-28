@@ -9,7 +9,9 @@ from nrtest.test import Test
 
 
 class TestSuite(object):
-    """docstring for TestSuite"""
+    """The TestSuite class stores metadata about the application under test
+    and the tests themselves. It also provides the interface to benchmarks.
+    """
     manifest_fname = 'manifest.json'
 
     def __init__(self, app, tests, benchmark_path):

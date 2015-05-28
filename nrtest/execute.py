@@ -3,6 +3,10 @@ import logging
 
 
 def execute_testsuite(ts):
+    """Execute the testsuite.
+
+    Returns: boolean success
+    """
     if not ts.valid_for_execute():
         return False
 

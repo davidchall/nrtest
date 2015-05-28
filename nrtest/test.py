@@ -1,14 +1,13 @@
 from os import makedirs, environ
 from os.path import exists, isfile, isdir, join, split
 import tempfile
-import re
 import shutil
 import logging
 import csv
 
 from . import Metadata
 from .process import source, execute, monitor
-from .utility import color
+from .utility import color, slugify
 
 PASS = color('passed', 'g')
 FAIL = color('failed', 'r')
@@ -65,7 +64,7 @@ class Test(Metadata):
 
     def __init__(self, *args, **kwargs):
         super(Test, self).__init__(*args, **kwargs)
-        self.subdir = _slugify(self.name)
+        self.subdir = slugify(self.name)
         self.out_log = 'stdout.log'
         self.err_log = 'stderr.log'
         self.perf_log = 'performance.log'
@@ -207,9 +206,3 @@ def _copy_filepath(rel_path, src_dir, dest):
     if not isdir(dest):
         makedirs(dest)
     shutil.copy(join(src_dir, rel_path), dest)
-
-
-def _slugify(s):
-    slug = s.strip().replace(' ', '_')
-    slug = re.sub(r'(?u)[^-\w.]', '', slug)
-    return slug
