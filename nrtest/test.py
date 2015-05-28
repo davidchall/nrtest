@@ -1,15 +1,13 @@
 from os import makedirs, environ
 from os.path import exists, isfile, isdir, join, split
-from six.moves import range
 import tempfile
-import re
 import shutil
 import logging
 import csv
 
 from . import Metadata
 from .process import source, execute, monitor
-from .utility import color
+from .utility import color, slugify
 
 PASS = color('passed', 'g')
 FAIL = color('failed', 'r')
@@ -49,13 +47,12 @@ class Test(Metadata):
         'input_files': [],
         'output_files': {},
         'fail_strings': [],
-        'timeout': None,
     }
     _compare_requires = [
         'name',
         'version',
         'description',
-        'dir',
+        'subdir',
         'out_log',
         'err_log',
         'perf_log',
@@ -67,7 +64,7 @@ class Test(Metadata):
 
     def __init__(self, *args, **kwargs):
         super(Test, self).__init__(*args, **kwargs)
-        self.dir = _slugify(self.name)
+        self.subdir = slugify(self.name)
         self.out_log = 'stdout.log'
         self.err_log = 'stderr.log'
         self.perf_log = 'performance.log'
@@ -80,9 +77,9 @@ class Test(Metadata):
             self.logger.addHandler(handler)
             self.logger.propagate = False
 
-    def execute(self, app):
-        input_dir = app.tests_path
-        output_dir = join(app.benchmark_path, self.dir)
+    def execute(self, app, benchmark_path):
+        input_dir = self.input_dir
+        output_dir = join(benchmark_path, self.subdir)
 
         try:
             self.logger.debug('Starting execution')
@@ -100,6 +97,21 @@ class Test(Metadata):
             self.logger.info(PASS)
 
         return self.passed
+
+    def valid_for_execute(self):
+        if not hasattr(self, 'input_dir'):
+            logging.error('Test input directory not specified')
+            return False
+
+        p = self.input_dir
+        if not isdir(p):
+            logging.error('Tests directory not found: "%s"' % p)
+            return False
+
+        return True
+
+    def valid_for_compare(self):
+        return True
 
     def _precheck_execute(self, input_dir, output_dir):
         for fname in self.input_files:
@@ -194,9 +206,3 @@ def _copy_filepath(rel_path, src_dir, dest):
     if not isdir(dest):
         makedirs(dest)
     shutil.copy(join(src_dir, rel_path), dest)
-
-
-def _slugify(s):
-    slug = s.strip().replace(' ', '_')
-    slug = re.sub(r'(?u)[^-\w.]', '', slug)
-    return slug
