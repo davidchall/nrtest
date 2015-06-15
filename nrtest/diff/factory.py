@@ -22,7 +22,7 @@ def factory(alias):
         from nrtest.diff import factory
         diff = factory('default')('file1.txt', 'file2.txt')
     """
-    return _registry[alias]
+    return _registry.get(alias, _registry['default'])
 
 
 class DiffException(Exception):
