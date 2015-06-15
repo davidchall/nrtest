@@ -3,7 +3,7 @@ from os.path import exists, isfile, isdir, join, split
 import tempfile
 import shutil
 import logging
-import csv
+import json
 
 from . import Metadata
 from .process import source, execute, monitor
@@ -55,19 +55,18 @@ class Test(Metadata):
         'subdir',
         'out_log',
         'err_log',
-        'perf_log',
         'output_files',
         'passed',
         'error_msg',
-        'duration',
     ]
+
+    out_log = 'stdout.log'
+    err_log = 'stderr.log'
+    perf_log = 'performance.log'
 
     def __init__(self, *args, **kwargs):
         super(Test, self).__init__(*args, **kwargs)
         self.subdir = slugify(self.name)
-        self.out_log = 'stdout.log'
-        self.err_log = 'stderr.log'
-        self.perf_log = 'performance.log'
 
         self.logger = logging.getLogger(self.name)
         if not self.logger.handlers:
@@ -165,7 +164,8 @@ class Test(Metadata):
                         p = execute(cmd, env=env, cwd=tmpdir,
                                     stdout=f_out, stderr=f_err)
 
-                        (exitcode, dur, perf) = monitor(p, timeout=app.timeout)
+                        (exitcode, perf) = monitor(p, timeout=app.timeout)
+                        dur = perf['duration']
 
             except IOError:
                 raise TestFailure('Unable to write log file')
@@ -186,13 +186,10 @@ class Test(Metadata):
         if dur is None:
             raise TestFailure('Program timed out')
 
-        self.duration = dur
-
-        with open(join(output_dir, self.perf_log), 'w') as f_perf:
-            if len(perf) > 0:
-                w = csv.writer(f_perf)
-                w.writerow(perf[0]._fields)
-                w.writerows([meas for meas in perf])
+        with open(join(output_dir, self.perf_log), 'w') as f:
+            json.dump(perf, f, sort_keys=True, indent=4,
+                      separators=(',', ': '))
+        self.output_files[self.perf_log] = 'performance'
 
 
 def _copy_filepath(rel_path, src_dir, dest):

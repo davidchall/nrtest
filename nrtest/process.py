@@ -1,5 +1,6 @@
 import six
 import os
+import sys
 
 import subprocess
 import psutil
@@ -59,15 +60,18 @@ def monitor(proc, timeout=None, min_dt=1, max_ndata=10):
         max_ndata: maximum number of performace measurements.
 
     Returns:
-        (exit_code, duration, data) where data is a list of performance
-        measurements. Duration is set to None if the process times out.
+        (exit_code, performance): where performance is a dictionary containing
+            data relating to the process performance (duration, maximum memory
+            usage, and performance measurements made throughout execution).
+            Duration is set to None if the process times out.
     """
     resampling_factor = 2
 
     time_init = datetime.fromtimestamp(proc.create_time())
     dt = min_dt
     ndata = 0
-    data = []
+    data = {}
+    max_memory = 0.0
 
     # This block uses the psutil.Process.wait() method in an unconventional
     # manner, in order to precisely determine the process duration, whilst
@@ -88,12 +92,17 @@ def monitor(proc, timeout=None, min_dt=1, max_ndata=10):
 
             # Measure performance
             try:
-                data.append(_measure_performance(proc, t))
+                datum = _measure_performance(proc, t)
+                for k in datum.keys():
+                    if k not in data:
+                        data[k] = []
+                    data[k].append(datum[k])
                 ndata += 1
+                max_memory = max(max_memory, datum['memory_MB'])
             except (psutil.AccessDenied, psutil.NoSuchProcess):
                 continue
 
-            # Kill process if it passes user-selected timeout
+            # Kill process if it exceeds timeout period
             if timeout and t >= timeout:
                 proc.kill()
                 exit_code = 0
@@ -102,11 +111,15 @@ def monitor(proc, timeout=None, min_dt=1, max_ndata=10):
 
             # Resample data if necessary
             if ndata >= max_ndata:
-                del data[::resampling_factor]
+                for arr in data.values():
+                    del arr[::resampling_factor]
                 ndata = len(data)
                 dt *= resampling_factor
 
-    return (exit_code, duration, data)
+    data['duration'] = duration
+    data['max_memory_MB'] = max_memory
+
+    return (exit_code, data)
 
 
 def _measure_performance(proc, time):
@@ -117,14 +130,20 @@ def _measure_performance(proc, time):
         time: time at which measurement is made (is appended to data).
 
     Returns:
-        namedtuple containing a data point.
+        dict containing performance data at this time.
     """
-    cpu_usage = proc.cpu_percent()
-    mem_usage = float(proc.memory_info().rss) / 1024 / 1024  # MB
+    datum = {
+        'time': time,
+        'cpu_pcnt': proc.cpu_percent(),
+        'memory_MB': float(proc.memory_info().rss) / 1024 / 1024,
+    }
 
-    # TODO: IO counters not available on OS X, but could use on Linux
-    # read_usage = float(proc.io_counters().read_bytes) / 1024 / 1024  # MB
-    # write_usage = float(proc.io_counters().write_bytes) / 1024 / 1024  # MB
+    if not sys.platform.startswith('darwin') and \
+       not sys.platform.lower().startswith('sunos'):
 
-    Performance = namedtuple('Performance', 'time, cpu_usage, mem_usage')
-    return Performance(time, cpu_usage, mem_usage)
+            read_MB = float(proc.io_counters().read_bytes) / 1024 / 1024
+            write_MB = float(proc.io_counters().write_bytes) / 1024 / 1024
+            datum['read_MB'] = read_MB
+            datum['write_MB'] = write_MB
+
+    return datum

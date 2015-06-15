@@ -14,13 +14,11 @@ test_comparison = {
     'version': 1.0,
     'description': None,
     'subdir': 'test_01',
-    'output_files': ['output.txt'],
+    'output_files': {'output.txt': 'default'},
     'out_log': 'stdout.log',
     'err_log': 'stderr.log',
-    'perf_log': 'performance.log',
     'passed': True,
     'error_msg': None,
-    'duration': 10.0,
 }
 
 app_execution = {
