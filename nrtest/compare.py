@@ -66,7 +66,7 @@ def compare_test(test_sut, test_ref, tolerance):
             msg = 'Attempted to compare to %s' % test_ref.name
             raise CompareException(msg)
 
-        if test_sut.output_files != test_ref.output_files:
+        if test_sut.output_files.keys() != test_ref.output_files.keys():
             raise CompareException('Benchmark has different output files')
 
         # compare result files

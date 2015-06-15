@@ -15,3 +15,13 @@ class DefaultDiff(BooleanDiff):
 
     def fail(self):
         return self.diff
+
+
+@register(None, 'none', 'null')
+class NoneDiff(BooleanDiff):
+    """A dummy class used to neglect the comparison of results files."""
+    def __init__(self, *args, **kwargs):
+        super(NoneDiff, self).__init__(*args, **kwargs)
+
+    def fail(self):
+        return False
