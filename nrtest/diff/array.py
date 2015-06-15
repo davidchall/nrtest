@@ -5,35 +5,16 @@ from .factory import register, NumericDiff, DiffException
 
 class ArrayDiff(NumericDiff):
 
-    def __init__(self, is_binary, delimiter, compare_hist, *args, **kwargs):
+    def __init__(self, is_binary, delimiter, *args, **kwargs):
         super(ArrayDiff, self).__init__(*args, **kwargs)
 
         self.is_binary = is_binary
         self.delimiter = delimiter
-        self.compare_hist = compare_hist
 
         self.data_t = self._read_file(self.path_t)
         self.data_r = self._read_file(self.path_r)
-        self.diff = None
 
-        if compare_hist:
-            if self.data_t.shape[1] != self.data_r.shape[1]:
-                raise DiffException('Arrays have different number of columns')
-
-            n_cols = self.data_t.shape[1]
-            for iCol in range(n_cols):
-                col_diff = self._compare_column(self.data_t[:, iCol],
-                                                self.data_r[:, iCol])
-
-                if self.diff is None:
-                    self.diff = col_diff
-                else:
-                    self.diff = np.concatenate((self.diff, col_diff), axis=1)
-
-            print self.diff
-
-        else:
-            self.diff = self._compare_array(self.data_t, self.data_r)
+        self.diff = self._compare(self.data_t, self.data_r)
 
     def _read_file(self, path):
         if self.is_binary:
@@ -41,22 +22,7 @@ class ArrayDiff(NumericDiff):
         else:
             return np.loadtxt(path, delimiter=self.delimiter, ndmin=1)
 
-    def _compare_column(self, col_t, col_r):
-        val_max = max(np.amax(col_t), np.amax(col_r))
-        val_min = min(np.amin(col_t), np.amin(col_r))
-        n_bins = 5
-
-        hist_t, _ = np.histogram(col_t, bins=n_bins, range=(val_min, val_max),
-                                 density=True)
-        hist_r, _ = np.histogram(col_r, bins=n_bins, range=(val_min, val_max),
-                                 density=True)
-
-        hist_t = hist_t.reshape((-1, 1))
-        hist_r = hist_r.reshape((-1, 1))
-
-        return self._compare_array(hist_t, hist_r)
-
-    def _compare_array(self, data_t, data_r):
+    def _compare(self, data_t, data_r):
         if data_t.shape != data_r.shape:
             raise DiffException('Inconsistent array shape')
 
@@ -77,16 +43,53 @@ class ArrayDiff(NumericDiff):
         return np.mean(self.diff)
 
 
+class NtupleDiff(ArrayDiff):
+
+    def __init__(self, is_binary, delimiter, *args, **kwargs):
+        super(NtupleDiff, self).__init__(is_binary, delimiter, *args, **kwargs)
+
+    def _compare(self, data_t, data_r):
+        n_cols = data_t.shape[1]
+        if data_r.shape[1] != n_cols:
+            raise DiffException('Arrays have different number of columns')
+
+        mean_t = np.mean(data_t, axis=0)
+        mean_r = np.mean(data_r, axis=0)
+        mean_diff = ArrayDiff._compare(self, mean_t, mean_r)
+
+        std_t = np.std(data_t, axis=0)
+        std_r = np.std(data_r, axis=0)
+        std_diff = ArrayDiff._compare(self, std_t, std_r)
+
+        return np.vstack((mean_diff, std_diff))
+
+
 @register('array')
 def default(path_t, path_r):
-    return ArrayDiff(False, None, True, path_t, path_r)
+    return ArrayDiff(False, None, path_t, path_r)
 
 
-@register('csv')
+@register('csv_array')
 def csv(path_t, path_r):
-    return ArrayDiff(False, ',', False, path_t, path_r)
+    return ArrayDiff(False, ',', path_t, path_r)
 
 
-@register('binarray')
+@register('bin_array')
 def binary(path_t, path_r):
-    return ArrayDiff(True, None, False, path_t, path_r)
+    return ArrayDiff(True, None, path_t, path_r)
+
+
+@register('ntuple')
+def ntuple(path_t, path_r):
+    return NtupleDiff(False, None, path_t, path_r)
+
+
+@register('csv_ntuple')
+def csv(path_t, path_r):
+    return NtupleDiff(False, ',', path_t, path_r)
+
+
+# does not yet work, since we don't know n_columns
+@register('bin_ntuple')
+def binary(path_t, path_r):
+    return NtupleDiff(True, None, path_t, path_r)
