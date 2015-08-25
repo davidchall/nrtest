@@ -3,7 +3,7 @@ import logging
 import json
 import os.path
 
-# nrtest imports
+# project imports
 from nrtest import Application
 from nrtest.test import Test
 
@@ -94,6 +94,11 @@ class TestSuite(object):
             return False
         else:
             os.makedirs(p)
+
+        p = self.app.setup_script
+        if p and not os.path.exists(p):
+            logging.error('Unable to find setup script: "%s"' % p)
+            return False
 
         for test in self.tests:
             if not test.valid_for_execute():

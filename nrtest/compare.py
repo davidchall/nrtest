@@ -2,7 +2,7 @@
 import logging
 from os.path import join
 
-# nrtest imports
+# project imports
 from .diff import factory, DiffException
 from .utility import color
 

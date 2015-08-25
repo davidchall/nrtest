@@ -1,3 +1,4 @@
+# system imports
 from os import makedirs, environ
 from os.path import exists, isfile, isdir, join, split
 import tempfile
@@ -5,6 +6,7 @@ import shutil
 import logging
 import json
 
+# project imports
 from . import Metadata
 from .process import source, execute, monitor
 from .utility import color, slugify
@@ -62,7 +64,7 @@ class Test(Metadata):
 
     out_log = 'stdout.log'
     err_log = 'stderr.log'
-    perf_log = 'performance.log'
+    perf_log = 'performance.json'
 
     def __init__(self, *args, **kwargs):
         super(Test, self).__init__(*args, **kwargs)

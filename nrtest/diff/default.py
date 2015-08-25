@@ -1,5 +1,7 @@
+# system imports
 import filecmp
 
+# project imports
 from .factory import register, BooleanDiff
 
 

@@ -1,14 +1,14 @@
-import six
+# system imports
 import os
 import sys
-
 import subprocess
-import psutil
-# Using psutil.Process.wait() in unconventional manner
-from psutil import TimeoutExpired as ProcessNotFinished
-
 from datetime import datetime
-from collections import namedtuple
+
+# third party imports
+import six
+import psutil
+# using psutil.Process.wait() in unconventional manner
+from psutil import TimeoutExpired as ProcessNotFinished
 
 
 def source(script, old_env=None):

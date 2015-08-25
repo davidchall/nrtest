@@ -1,5 +1,7 @@
+# third party imports
 import numpy as np
 
+# project imports
 from .factory import register, NumericDiff, DiffException
 
 
