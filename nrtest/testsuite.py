@@ -88,13 +88,6 @@ class TestSuite(object):
         If this returns false, the nrtest script shall exit before executing
         any tests.
         """
-        p = self.benchmark_path
-        if os.path.exists(p):
-            logging.error('Benchmark directory already exists: "%s"' % p)
-            return False
-        else:
-            os.makedirs(p)
-
         p = self.app.setup_script
         if p and not os.path.exists(p):
             logging.error('Unable to find setup script: "%s"' % p)
@@ -103,6 +96,13 @@ class TestSuite(object):
         for test in self.tests:
             if not test.valid_for_execute():
                 return False
+
+        p = self.benchmark_path
+        if os.path.exists(p):
+            logging.error('Benchmark directory already exists: "%s"' % p)
+            return False
+        else:
+            os.makedirs(p)
 
         return True
 

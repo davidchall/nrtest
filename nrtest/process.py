@@ -14,7 +14,6 @@ from psutil import TimeoutExpired as ProcessNotFinished
 def source(script, old_env=None):
     """Emulates source in bash and returns the resulting environment object.
     """
-    script = os.path.abspath(script)
     if not os.path.isfile(script):
         return None
 
