@@ -15,9 +15,6 @@ class TestFailure(Exception):
 
 
 def execute_testsuite(ts):
-    if not validate_testsuite(ts):
-        return False
-
     success = True
     for test in ts.tests:
         if not execute_test(test, ts.app):

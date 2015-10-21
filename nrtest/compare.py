@@ -21,10 +21,6 @@ def compare_testsuite(ts_sut, ts_ref, tolerance):
 
     Returns: boolean compatibility
     """
-    # check each testsuite is individually valid before beginning
-    if not validate_testsuite(ts_sut) or not validate_testsuite(ts_ref):
-        return False
-
     # check testsuites are comparable
     tests_sut = {t.name: t for t in ts_sut.tests}
     tests_ref = {t.name: t for t in ts_ref.tests}
