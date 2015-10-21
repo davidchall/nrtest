@@ -7,13 +7,13 @@ from os.path import exists, isfile, isdir, join
 from argparse import ArgumentParser
 from sys import exit
 
-# nrtest imports
+# project imports
 from nrtest.testsuite import TestSuite
-from nrtest.compare import compare_testsuite
-from nrtest.execute import execute_testsuite
 
 
 def execute(args):
+    from nrtest.execute import execute_testsuite, validate_testsuite
+
     for p in args.tests + [args.app]:
         if not exists(p):
             logging.error('Could not find path: "%s"' % p)
@@ -27,6 +27,9 @@ def execute(args):
     logging.info('Found %i tests' % len(test_files))
 
     ts = TestSuite.read_config(args.app, test_files, args.output)
+
+    if not validate_testsuite(ts):
+        exit(1)
 
     try:
         success = execute_testsuite(ts)
@@ -42,8 +45,13 @@ def execute(args):
 
 
 def compare(args):
+    from nrtest.compare import compare_testsuite, validate_testsuite
+
     ts_new = TestSuite.read_benchmark(args.new)
     ts_old = TestSuite.read_benchmark(args.old)
+
+    if not validate_testsuite(ts_new) or not validate_testsuite(ts_old):
+        exit(1)
 
     try:
         compatible = compare_testsuite(ts_new, ts_old, args.tolerance)

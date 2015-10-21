@@ -1,11 +1,11 @@
 # system imports
-import logging
 import json
 import os.path
 
 # project imports
-from nrtest import Application
-from nrtest.test import Test
+from . import Application
+from .test import Test
+from .utility import slugify
 
 
 class TestSuite(object):
@@ -23,7 +23,7 @@ class TestSuite(object):
             benchmark_path: path to the benchmark directory
         """
         self.app = app
-        self.tests = tests
+        self.tests = sorted(tests)
         self.benchmark_path = benchmark_path
 
     @classmethod
@@ -42,9 +42,10 @@ class TestSuite(object):
         tests = []
         for p in test_config_paths:
             with open(p) as f:
-                test = Test.for_execution(json.load(f))
-                test.input_dir = os.path.dirname(p)
-                tests.append(test)
+                t = Test.for_execution(json.load(f))
+                t.input_dir = os.path.dirname(p)
+                t.output_dir = os.path.join(benchmark_path, slugify(t.name))
+                tests.append(t)
 
         return cls(app, tests, benchmark_path)
 
@@ -62,6 +63,8 @@ class TestSuite(object):
 
         app = Application.for_comparison(manifest['Application'])
         tests = [Test.for_comparison(test) for test in manifest['Tests']]
+        for t in tests:
+            t.output_dir = os.path.join(benchmark_path, slugify(t.name))
 
         return cls(app, tests, benchmark_path)
 
@@ -80,46 +83,3 @@ class TestSuite(object):
         with open(path, 'w') as f:
             json.dump(manifest, f, sort_keys=True, indent=4,
                       separators=(',', ': '))
-
-    def valid_for_execute(self):
-        """Validates the presence of files and directories needed for execute
-        commands.
-
-        If this returns false, the nrtest script shall exit before executing
-        any tests.
-        """
-        p = self.app.setup_script
-        if p and not os.path.exists(p):
-            logging.error('Unable to find setup script: "%s"' % p)
-            return False
-
-        for test in self.tests:
-            if not test.valid_for_execute():
-                return False
-
-        p = self.benchmark_path
-        if os.path.exists(p):
-            logging.error('Benchmark directory already exists: "%s"' % p)
-            return False
-        else:
-            os.makedirs(p)
-
-        return True
-
-    def valid_for_compare(self):
-        """Validates the presence of files and directories needed for compare
-        commands.
-
-        If this returns false, the nrtest script shall exit before comparing
-        any tests.
-        """
-        p = self.benchmark_path
-        if not os.path.isdir(p):
-            logging.error('Benchmark directory not found: "%s"' % p)
-            return False
-
-        for test in self.tests:
-            if not test.valid_for_compare():
-                return False
-
-        return True
