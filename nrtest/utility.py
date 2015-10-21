@@ -1,6 +1,8 @@
 # system imports
+import os
 import sys
 import re
+import shutil
 
 
 def color(string, c):
@@ -20,3 +22,16 @@ def slugify(s):
     slug = s.strip().replace(' ', '_')
     slug = re.sub(r'(?u)[^-\w.]', '', slug)
     return slug
+
+
+def copy_file_and_path(rel_path, src_dir, dest):
+    """Copy a relative filepath from src_dir to dest, whilst generating any
+    directories included in rel_path
+
+    E.g. copy subdir/foo.txt from dir1/ to dir2/ results in dir2/subdir/foo.txt
+    """
+    folders, _ = os.path.split(rel_path)
+    dest = os.path.join(dest, folders)
+    if not os.path.isdir(dest):
+        os.makedirs(dest)
+    shutil.copy(os.path.join(src_dir, rel_path), dest)

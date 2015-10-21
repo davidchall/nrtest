@@ -1,6 +1,6 @@
 # system imports
+import os
 import logging
-from os.path import join
 
 # project imports
 from .diff import factory, DiffException
@@ -22,7 +22,7 @@ def compare_testsuite(ts_sut, ts_ref, tolerance):
     Returns: boolean compatibility
     """
     # check each testsuite is individually valid before beginning
-    if not ts_sut.valid_for_compare() or not ts_ref.valid_for_compare():
+    if not validate_testsuite(ts_sut) or not validate_testsuite(ts_ref):
         return False
 
     # check testsuites are comparable
@@ -37,9 +37,6 @@ def compare_testsuite(ts_sut, ts_ref, tolerance):
     for name in sorted(tests_sut):
         test_sut = tests_sut[name]
         test_ref = tests_ref[name]
-
-        test_sut.subdir = join(ts_sut.benchmark_path, test_sut.subdir)
-        test_ref.subdir = join(ts_ref.benchmark_path, test_ref.subdir)
 
         if not compare_test(test_sut, test_ref, tolerance):
             compatible = False
@@ -73,8 +70,8 @@ def compare_test(test_sut, test_ref, tolerance):
         # return False immediately if any are incompatible
         max_diff = 0.0
         for fname, ftype in test_sut.output_files.iteritems():
-            path_sut = join(test_sut.subdir, fname)
-            path_ref = join(test_ref.subdir, fname)
+            path_sut = os.path.join(test_sut.output_dir, fname)
+            path_ref = os.path.join(test_ref.output_dir, fname)
 
             try:
                 diff = factory(ftype)(path_sut, path_ref)
@@ -103,3 +100,38 @@ def compare_test(test_sut, test_ref, tolerance):
             logger.info(color(grade, 'g'))
 
     return compatible
+
+
+def validate_testsuite(ts):
+    """Validates the presence of files and directories needed for compare
+    commands.
+
+    If this returns false, the nrtest script shall exit before comparing
+    any tests.
+    """
+    p = ts.benchmark_path
+    if not os.path.isdir(p):
+        logging.error('Benchmark directory not found: "%s"' % p)
+        return False
+
+    for t in ts.tests:
+        if not validate_test(t):
+            return False
+
+    return True
+
+
+def validate_test(test):
+    logger = logging.getLogger(test.name)
+
+    # not specified by user, but should be set by now
+    additional_required_fields = [
+        'output_dir',
+    ]
+
+    for field in additional_required_fields:
+        if not hasattr(test, field):
+            logger.error('Unable to find "%s" property' % field)
+            return False
+
+    return True

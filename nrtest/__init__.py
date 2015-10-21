@@ -10,27 +10,27 @@ class Metadata(dict):
     Provides basic validation of input fields, with different requirements for
     the testing and comparison steps.
     """
-    _compare_requires = []
-    _testing_requires = []
-    _testing_allows = {}
+    execute_required_fields = []
+    execute_optional_fields = {}
+    compare_required_fields = []
 
     def __init__(self, *args, **kwargs):
         super(Metadata, self).__init__(*args, **kwargs)
         self.__dict__ = self
 
     def skim(self):
-        return {k: self.get(k, None) for k in self._compare_requires}
+        return {k: self.get(k, None) for k in self.compare_required_fields}
 
     @classmethod
     def for_execution(cls, data):
-        requires, allows = cls._testing_requires, cls._testing_allows
-        cls._validate(data, requires, allows)
+        req, opt = cls.execute_required_fields, cls.execute_optional_fields
+        cls._validate(data, req, opt)
         return cls(**data)
 
     @classmethod
     def for_comparison(cls, data):
-        requires, allows = cls._compare_requires, {}
-        cls._validate(data, requires, allows)
+        req, opt = cls.compare_required_fields, {}
+        cls._validate(data, req, opt)
         return cls(**data)
 
     @staticmethod
@@ -54,24 +54,24 @@ class Application(Metadata):
     Required fields:
         name
         version
-        exe: executable [path]
+        exe: executable
         setup_script: environment setup script [path]
 
     Optional fields:
         description
         timeout [float in secs]
     """
-    _testing_requires = [
+    execute_required_fields = [
         'name',
         'version',
         'exe',
     ]
-    _testing_allows = {
+    execute_optional_fields = {
         'description': None,
         'setup_script': None,
         'timeout': None,
     }
-    _compare_requires = [
+    compare_required_fields = [
         'name',
         'version',
         'description',
