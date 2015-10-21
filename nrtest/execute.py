@@ -7,7 +7,7 @@ import json
 
 # project imports
 from .process import source, execute, monitor
-from .utility import color, copy_file_and_path
+from .utility import color, copy_file_and_path, which
 
 
 class TestFailure(Exception):
@@ -122,6 +122,11 @@ def validate_testsuite(ts):
     p = ts.app.setup_script
     if p and not os.path.exists(p):
         logging.error('Unable to find setup script: "%s"' % p)
+        return False
+
+    env = source(ts.app.setup_script) if ts.app.setup_script else os.environ
+    if not which(ts.app.exe, env):
+        logging.error('Unable to find executable: "%s"' % ts.app.exe)
         return False
 
     for t in ts.tests:

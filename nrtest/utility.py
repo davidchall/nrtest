@@ -35,3 +35,28 @@ def copy_file_and_path(rel_path, src_dir, dest):
     if not os.path.isdir(dest):
         os.makedirs(dest)
     shutil.copy(os.path.join(src_dir, rel_path), dest)
+
+
+def which(program, env):
+    """Returns absolute path to first occurence of program in the PATH
+    environment variable (echoing the bash script 'which').
+
+    Args:
+        program: the executable name or absolute path
+        env: the environment to search
+    """
+    def is_executable(path):
+        return os.path.isfile(path) and os.access(path, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_executable(program):
+            return program
+    else:
+        for p in env['PATH'].split(os.pathsep):
+            p = p.strip('"')
+            p = os.path.join(p, program)
+            if is_executable(p):
+                return p
+
+    return None
