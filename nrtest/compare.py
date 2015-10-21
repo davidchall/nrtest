@@ -101,9 +101,6 @@ def compare_test(test_sut, test_ref, tolerance):
 def validate_testsuite(ts):
     """Validates the presence of files and directories needed for compare
     commands.
-
-    If this returns false, the nrtest script shall exit before comparing
-    any tests.
     """
     p = ts.benchmark_path
     if not os.path.isdir(p):
