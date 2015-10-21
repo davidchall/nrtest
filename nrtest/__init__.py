@@ -79,6 +79,6 @@ class Application(Metadata):
 
     def __init__(self, *args, **kwargs):
         super(Application, self).__init__(*args, **kwargs)
-        if hasattr(self, 'setup_script'):
+        if hasattr(self, 'setup_script') and self.setup_script is not None:
             self.setup_script = os.path.expanduser(self.setup_script)
             self.setup_script = os.path.abspath(self.setup_script)

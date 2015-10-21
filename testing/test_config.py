@@ -13,10 +13,7 @@ test_comparison = {
     'name': 'test',
     'version': 1.0,
     'description': None,
-    'subdir': 'test_01',
     'output_files': {'output.txt': 'default'},
-    'out_log': 'stdout.log',
-    'err_log': 'stderr.log',
     'passed': True,
     'error_msg': None,
 }
