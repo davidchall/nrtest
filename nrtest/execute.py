@@ -35,7 +35,7 @@ def execute_test(test, app):
         _postcheck(test)
     except TestFailure as e:
         test.passed = False
-        test.error_msg = e.value
+        test.error_msg = str(e)
         logger.info(color('failed', 'r'))
         logger.info(test.error_msg)
     else:
