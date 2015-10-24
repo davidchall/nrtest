@@ -4,6 +4,7 @@ import logging
 import tempfile
 import shutil
 import json
+import datetime
 
 # project imports
 from .process import source, execute, monitor
@@ -25,13 +26,12 @@ def execute_testsuite(ts):
 
 def execute_test(test, app):
     logger = logging.getLogger(test.name)
-    logger.debug('Starting execution')
 
     if not os.path.exists(test.output_dir):
         os.makedirs(test.output_dir)
 
     try:
-        _execute(test, app)
+        duration = _execute(test, app)
         _postcheck(test)
     except TestFailure as e:
         test.passed = False
@@ -42,8 +42,9 @@ def execute_test(test, app):
         test.passed = True
         test.error_msg = None
         logger.info(color('passed', 'g'))
+        dur_str = str(datetime.timedelta(seconds=duration)).split('.')[0]
+        logger.debug('Duration {0}'.format(dur_str))
 
-    logger.debug('Finishing execution')
     return test.passed
 
 
@@ -96,6 +97,8 @@ def _execute(test, app):
     p_perf = os.path.join(test.output_dir, test.perf_fname)
     with open(p_perf, 'w') as f:
         json.dump(perf, f, sort_keys=True, indent=4, separators=(',', ': '))
+
+    return dur
 
 
 def _postcheck(test):
