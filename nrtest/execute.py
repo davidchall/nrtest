@@ -165,6 +165,7 @@ def validate_test(test):
     for fname in test.input_files:
         p = os.path.join(test.input_dir, fname)
         if not os.path.isfile(p):
-            raise logger.error('Input file not found: "%s"' % p)
+            logger.error('Input file not found: "%s"' % p)
+            return False
 
     return True
