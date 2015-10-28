@@ -3,8 +3,7 @@ import json
 import os.path
 
 # project imports
-from . import Application
-from .test import Test
+from . import Application, Test
 from .utility import slugify
 
 

@@ -1,5 +1,4 @@
-from nrtest import Application
-from nrtest.test import Test
+from nrtest import Application, Test
 
 from nose.tools import raises
 
