@@ -3,7 +3,7 @@ import os
 import logging
 
 # project imports
-from .diff import factory, DiffException
+from .result import create
 from .utility import color
 
 
@@ -69,18 +69,17 @@ def compare_test(test_sut, test_ref, tolerance):
             path_sut = os.path.join(test_sut.output_dir, fname)
             path_ref = os.path.join(test_ref.output_dir, fname)
 
-            try:
-                diff = factory(ftype)(path_sut, path_ref)
-            except DiffException as e:
-                raise CompareException('%s: %s' % (fname, str(e)))
+            result_sut = create(ftype)(path_sut)
+            result_ref = create(ftype)(path_ref)
 
-            if diff is None:
+            compatible = result_sut.compatible(result_ref)
+
+            if compatible is True:
                 continue
-            if not diff.numeric:
-                if diff.fail():
-                    raise CompareException('%s: boolean diff failed' % fname)
+            elif compatible is False:
+                raise CompareException('%s: diff failed' % fname)
             else:
-                max_diff = max(max_diff, diff.max())
+                max_diff = max(max_diff, compatible)
 
     except CompareException as e:
         logger.info(color('fail', 'r'))

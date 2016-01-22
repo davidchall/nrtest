@@ -1,6 +1,6 @@
-from .factory import factory
+from .factory import create
 
 # classes in the following submodules will be registered to the factory
 from .default import *
-from .array import *
-from .performance import *
+from .null import *
+from .topas_csv import *
