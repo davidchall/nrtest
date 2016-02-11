@@ -69,6 +69,11 @@ def compare_test(test_sut, test_ref, tolerance):
             path_sut = os.path.join(test_sut.output_dir, fname)
             path_ref = os.path.join(test_ref.output_dir, fname)
 
+            if not os.path.exists(path_sut):
+                raise CompareException('Output file not found: %s' % path_sut)
+            if not os.path.exists(path_ref):
+                raise CompareException('Output file not found: %s' % path_ref)
+
             result_sut = create(ftype)(path_sut)
             result_ref = create(ftype)(path_ref)
 
