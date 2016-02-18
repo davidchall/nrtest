@@ -13,5 +13,5 @@ class DefaultResult(BaseResult):
     def __init__(self, *args, **kwargs):
         super(DefaultResult, self).__init__(*args, **kwargs)
 
-    def compatible(self, other):
+    def compatible(self, other, rtol, atol):
         return filecmp.cmp(self.path, other.path, shallow=False)

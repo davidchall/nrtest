@@ -10,5 +10,5 @@ class NullResult(BaseResult):
     def __init__(self, *args, **kwargs):
         super(NullResult, self).__init__(*args, **kwargs)
 
-    def compatible(self, other):
+    def compatible(self, other, rtol, atol):
         return True

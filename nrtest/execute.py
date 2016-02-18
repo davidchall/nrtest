@@ -36,12 +36,12 @@ def execute_test(test, app):
     except TestFailure as e:
         test.passed = False
         test.error_msg = str(e)
-        logger.info(color('failed', 'r'))
+        logger.info(color('fail', 'r'))
         logger.info(test.error_msg)
     else:
         test.passed = True
         test.error_msg = None
-        logger.info(color('passed', 'g'))
+        logger.info(color('pass', 'g'))
         dur_str = str(datetime.timedelta(seconds=duration)).split('.')[0]
         logger.debug('Duration {0}'.format(dur_str))
 

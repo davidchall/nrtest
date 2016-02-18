@@ -27,5 +27,5 @@ class BaseResult(object):
     def __init__(self, filepath):
         self.path = filepath
 
-    def compatible(self, other):
+    def compatible(self, other, rtol, atol):
         raise NotImplementedError('abstract method')

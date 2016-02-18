@@ -3,4 +3,4 @@ from .factory import create
 # classes in the following submodules will be registered to the factory
 from .default import *
 from .null import *
-from .topas_csv import *
+from .topas import *

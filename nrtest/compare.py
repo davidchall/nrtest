@@ -11,7 +11,7 @@ class CompareException(Exception):
     pass
 
 
-def compare_testsuite(ts_sut, ts_ref, tolerance):
+def compare_testsuite(ts_sut, ts_ref, rtol, atol):
     """Compare the results of a testsuite against a benchmark.
 
     Args:
@@ -34,13 +34,13 @@ def compare_testsuite(ts_sut, ts_ref, tolerance):
         test_sut = tests_sut[name]
         test_ref = tests_ref[name]
 
-        if not compare_test(test_sut, test_ref, tolerance):
+        if not compare_test(test_sut, test_ref, rtol, atol):
             compatible = False
 
     return compatible
 
 
-def compare_test(test_sut, test_ref, tolerance):
+def compare_test(test_sut, test_ref, rtol, atol):
     """Compare the results of a single test against a benchmark.
 
     Args:
@@ -64,7 +64,6 @@ def compare_test(test_sut, test_ref, tolerance):
 
         # compare result files
         # return False immediately if any are incompatible
-        max_diff = 0.0
         for fname, ftype in test_sut.output_files.iteritems():
             path_sut = os.path.join(test_sut.output_dir, fname)
             path_ref = os.path.join(test_ref.output_dir, fname)
@@ -77,14 +76,10 @@ def compare_test(test_sut, test_ref, tolerance):
             result_sut = create(ftype)(path_sut)
             result_ref = create(ftype)(path_ref)
 
-            compatible = result_sut.compatible(result_ref)
+            compatible = result_sut.compatible(result_ref, rtol, atol)
 
-            if compatible is True:
-                continue
-            elif compatible is False:
+            if not compatible:
                 raise CompareException('%s: diff failed' % fname)
-            else:
-                max_diff = max(max_diff, compatible)
 
     except CompareException as e:
         logger.info(color('fail', 'r'))
@@ -92,12 +87,7 @@ def compare_test(test_sut, test_ref, tolerance):
         compatible = False
 
     else:
-        grade = '{:.2%}'.format(max_diff)
-        if max_diff > tolerance:
-            logger.info(color(grade, 'r'))
-            compatible = False
-        else:
-            logger.info(color(grade, 'g'))
+        logger.info(color('pass', 'g'))
 
     return compatible
 
@@ -109,6 +99,11 @@ def validate_testsuite(ts):
     p = ts.benchmark_path
     if not os.path.isdir(p):
         logging.error('Benchmark directory not found: "%s"' % p)
+        return False
+
+    p = os.path.join(ts.benchmark_path, ts.manifest_fname)
+    if not os.path.exists(p):
+        logging.error('Benchmark manifest not found: "%s"' % p)
         return False
 
     for t in ts.tests:
