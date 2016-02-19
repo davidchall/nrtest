@@ -1,6 +1,6 @@
 # third party imports
 from numpy.testing import assert_allclose
-from topas_result import read_ntuple, BinnedResult
+from topas2numpy import read_ntuple, BinnedResult
 
 # project imports
 from .factory import register, BaseResult

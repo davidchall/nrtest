@@ -20,6 +20,7 @@ setup(
         'six',
         'psutil>=2.0',
         'numpy>=1.6.0',
+        'topas2numpy',
     ],
 
     # metadata for upload to PyPI
