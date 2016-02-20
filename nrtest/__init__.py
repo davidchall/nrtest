@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
+
 # system imports
 import os.path
 import logging
 
-# project imports
-from .__version__ import __version__
+__author__ = 'David Hall'
+__version__ = '0.1.0'
 
 
 class Metadata(dict):

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # project imports
 from .factory import register, BaseResult
 

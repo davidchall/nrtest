@@ -1,4 +1,6 @@
-# third party imports
+# -*- coding: utf-8 -*-
+
+# third-party imports
 from numpy.testing import assert_allclose
 from topas2numpy import read_ntuple, BinnedResult
 

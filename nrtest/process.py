@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+
 # system imports
 import os
 import sys
 import subprocess
 from datetime import datetime
 
-# third party imports
+# third-party imports
 import six
 import psutil
 # using psutil.Process.wait() in unconventional manner

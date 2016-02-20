@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # stores implementations and their aliases
 _registry = {}
 

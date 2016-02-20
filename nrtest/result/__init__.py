@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from .factory import create
 
 # classes in the following submodules will be registered to the factory

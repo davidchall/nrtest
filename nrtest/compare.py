@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # system imports
 import os
 import logging
