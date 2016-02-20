@@ -35,9 +35,8 @@ setup(
     url='https://github.com/davidchall/nrtest',
     packages=[
         'nrtest',
+        'nrtest.result',
     ],
-    package_dir={'nrtest':
-                 'nrtest'},
     scripts=[
         'scripts/nrtest',
     ],
