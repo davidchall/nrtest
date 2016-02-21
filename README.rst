@@ -4,7 +4,83 @@ nrtest
 
 |pypi| |travis-ci| |coveralls| |readthedocs|
 
-Numerical regression testing
+``nrtest`` is an end-to-end regression testing framework, designed for scientific software that perform numerical calculations.
+
+
+Features
+--------
+
+``nrtest`` aims to simplify your workflow:
+
+- JSON files describe the software under test and the tests themselves
+- result files are stored in a portable benchmark directory
+- benchmarks are compared by iterating through tests and their results
+.. - custom comparison functions can easily be added
+
+
+Basic Usage
+-----------
+
+As an example usage, we consider testing TOPAS_. This is a Monte Carlo tool for particle simulation, designed for medical physics research. Of course, such a tool must be rigorously validated against experimental data. But it is also useful to frequently run shorter tests, checking for regressions by comparing results to a previous version.
+
+First, we describe the software under test in a configuration file. Note that ``setup_script`` defines the environment needed to run the software.
+
+.. code-block:: json
+    :caption: apps/topas-2.0.3.json
+
+    {
+        "name": "topas",
+        "version" : "2.0.3",
+        "setup_script" : "/path/to/topas-2.0.3/setup.sh",
+        "exe" : "topas"
+    }
+
+We then describe the test in second configuration file. In doing so, we define the command-line arguments presented to the executable and the input files needed for the test to run. Finally, we also specify the expected output files, and declare how they should be compared to a benchmark. In this case, we use ``topas binned`` (a custom comparison routine) though other comparison routines are available.
+
+.. code-block:: json
+    :caption: tests/Scoring_01.json
+
+    {
+        "name": "Scoring_01",
+        "version": "1.0",
+        "description": "Basic test shooting a 6cm diameter proton beam into a water phantom.",
+        "args": [
+            "Scoring_01.txt"
+        ],
+        "input_files": [
+            "Scoring_01.txt",
+            "GlobalParameters.txt"
+        ],
+        "output_files": {
+            "Dose.csv": "topas binned"
+        }
+    }
+
+To execute the test, we tell ``nrtest`` where to find the configuration files and where to output the benchmark. Note that ``nrtest`` will search ``tests/`` for tests, though we could have specified ``tests/Scoring_01.json``.
+
+.. code-block:: bash
+
+    $ nrtest execute apps/topas-2.0.3.json tests/ -o benchmarks/2.0.3
+    INFO: Found 1 tests
+    Scoring_01: pass
+    INFO: Finished
+
+To compare to a previous benchmark:
+
+.. code-block:: bash
+
+    $ nrtest compare benchmarks/2.0.3 benchmarks/2.0.2
+    Scoring_01: pass
+    INFO: Finished
+
+
+More advanced usage is detailed in the documentation_.
+
+
+
+
+.. _TOPAS: http://www.topasmc.org
+.. _documentation: https://nrtest.readthedocs.org/en/latest
 
 
 .. |pypi| image:: https://img.shields.io/pypi/v/nrtest.svg
