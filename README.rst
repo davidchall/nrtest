@@ -15,7 +15,6 @@ Features
 - JSON files describe the software under test and the tests themselves
 - result files are stored in a portable benchmark directory
 - benchmarks are compared by iterating through tests and their results
-.. - custom comparison functions can easily be added
 
 
 .. _basic_usage:
