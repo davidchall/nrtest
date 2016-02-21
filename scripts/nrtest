@@ -93,7 +93,7 @@ if __name__ == '__main__':
     c_parser.add_argument('--rtol', default=0.01,
                           help='Relative precision at which results \
                           considered compatible')
-    c_parser.add_argument('--atol', default=0,
+    c_parser.add_argument('--atol', default=0.0,
                           help='Absolute precision at which results \
                           considered compatible')
 

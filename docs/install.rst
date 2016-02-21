@@ -3,11 +3,12 @@
 Installation
 ------------
 
-At the command line::
+The easiest way to install a stable release is using pip::
+
+    $ pip install nrtest
+
+or easy_install::
 
     $ easy_install nrtest
 
-Or, if you have virtualenvwrapper installed::
-
-    $ mkvirtualenv nrtest
-    $ pip install nrtest
+This will automatically fetch the package from PyPI and install it.

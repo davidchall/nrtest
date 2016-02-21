@@ -21,10 +21,6 @@ requirements = [
     'topas2numpy',
 ]
 
-test_requirements = [
-    # TODO: put package test requirements here
-]
-
 setup(
     name='nrtest',
     version='0.1.0',
@@ -57,6 +53,5 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
     ],
-    test_suite='tests',
-    tests_require=test_requirements
+    test_suite='tests'
 )
