@@ -5,7 +5,7 @@ import os.path
 import logging
 
 __author__ = 'David Hall'
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 
 class Metadata(dict):
