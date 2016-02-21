@@ -25,10 +25,9 @@ Basic Usage
 
 As an example usage, we consider testing TOPAS_. This is a Monte Carlo tool for particle simulation, designed for medical physics research. Of course, such a tool must be rigorously validated against experimental data. But it is also useful to frequently run shorter tests, checking for regressions by comparing results to a previous version.
 
-First, we describe the software under test in a configuration file. Note that ``setup_script`` defines the environment needed to run the software.
+First, we describe the software under test in a configuration file called ``apps/topas-2.0.3.json``. Note that ``setup_script`` defines the environment needed to run the software.
 
 .. code-block:: json
-    :caption: apps/topas-2.0.3.json
 
     {
         "name": "topas",
@@ -37,10 +36,9 @@ First, we describe the software under test in a configuration file. Note that ``
         "exe" : "topas"
     }
 
-We then describe the test in second configuration file. In doing so, we define the command-line arguments presented to the executable and the input files needed for the test to run. Finally, we also specify the expected output files, and declare how they should be compared to a benchmark. In this case, we use ``topas binned`` (a custom comparison routine) though other comparison routines are available.
+We then describe the test in second configuration file called ``tests/Scoring_01.json``. In doing so, we define the command-line arguments presented to the executable and the input files needed for the test to run. Finally, we also specify the expected output files, and declare how they should be compared to a benchmark. In this case, we use ``topas binned`` (a custom comparison routine) though other comparison routines are available.
 
 .. code-block:: json
-    :caption: tests/Scoring_01.json
 
     {
         "name": "Scoring_01",
