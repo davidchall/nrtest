@@ -23,7 +23,7 @@ requirements = [
 
 setup(
     name='nrtest',
-    version='0.1.1',
+    version='0.1.2',
     description="Numerical regression testing",
     long_description=readme + '\n\n' + history,
     author="David Hall",
