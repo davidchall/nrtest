@@ -1,6 +1,5 @@
-=====
 Usage
-=====
+-----
 
 To use nrtest in a project::
 

@@ -8,7 +8,7 @@ from topas2numpy import read_ntuple, BinnedResult
 from .factory import register, BaseResult
 
 
-@register('topas binned', 'topas csv')
+@register('topas binned')
 class TopasBinnedResult(BaseResult, BinnedResult):
     def __init__(self, *args, **kwargs):
         BaseResult.__init__(self, *args, **kwargs)

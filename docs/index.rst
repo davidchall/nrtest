@@ -4,18 +4,12 @@ Welcome to nrtest's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   readme
-   installation
-   usage
-   config_files
-   history
+    readme
+    user_guide
 
-Indices and tables
-==================
+.. toctree::
+    :maxdepth: 1
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+    history

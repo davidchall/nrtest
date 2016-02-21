@@ -18,6 +18,8 @@ Features
 .. - custom comparison functions can easily be added
 
 
+.. _basic_usage:
+
 Basic Usage
 -----------
 
