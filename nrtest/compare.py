@@ -4,6 +4,9 @@
 import os
 import logging
 
+# third-party imports
+import six
+
 # project imports
 from .utility import color
 from .plugin import find_unique_function
@@ -66,7 +69,7 @@ def compare_test(test_sut, test_ref, rtol, atol):
 
         # compare result files
         # return False immediately if any are incompatible
-        for fname, ftype in test_sut.output_files.iteritems():
+        for fname, ftype in six.iteritems(test_sut.output_files):
 
             ftype = ftype.lower()
             path_sut = os.path.join(test_sut.output_dir, fname)

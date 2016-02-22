@@ -4,6 +4,9 @@
 import os.path
 import logging
 
+# third-party imports
+import six
+
 __author__ = 'David Hall'
 __version__ = '0.1.2'
 
@@ -128,7 +131,7 @@ class Test(Metadata):
     def __init__(self, *args, **kwargs):
         super(Test, self).__init__(*args, **kwargs)
 
-        for fname, ftype in self.output_files.iteritems():
+        for fname, ftype in six.iteritems(self.output_files):
             if ftype is None:
                 self.output_files[fname] = 'null'
 
