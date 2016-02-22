@@ -15,6 +15,7 @@ Features
 - JSON files describe the software under test and the tests themselves
 - result files are stored in a portable benchmark directory
 - benchmarks are compared by iterating through tests and their results
+- custom comparisons can easily be added through extensions
 
 
 .. _basic_usage:
@@ -35,7 +36,7 @@ First, we describe the software under test in a configuration file called ``apps
         "exe" : "topas"
     }
 
-We then describe the test in second configuration file called ``tests/Scoring_01.json``. In doing so, we define the command-line arguments presented to the executable and the input files needed for the test to run. Finally, we also specify the expected output files, and declare how they should be compared to a benchmark. In this case, we use ``topas binned`` (a custom comparison routine) though other comparison routines are available.
+We then describe the test in second configuration file called ``tests/Scoring_01.json``. In doing so, we define the command-line arguments presented to the executable and the input files needed for the test to run. Finally, we also specify the expected output files, and declare how they should be compared to a benchmark. Here we use ``topas binned``, which is a custom comparison routine, though some comparison routines are bundled with nrtest. It is also easy to add your own.
 
 .. code-block:: json
 

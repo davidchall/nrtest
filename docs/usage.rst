@@ -1,4 +1,5 @@
 .. highlight:: shell
+.. _usage:
 
 Usage
 -----
