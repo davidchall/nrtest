@@ -17,9 +17,15 @@ with open('HISTORY.rst') as history_file:
 requirements = [
     'six',
     'psutil>=2.0',
-    'numpy>=1.6.0',
-    'topas2numpy',
 ]
+
+# bundled actions
+entry_points = {
+    'nrtest.compare': [
+        'default=nrtest.compare:default_compare',
+        'null=nrtest.compare:null_compare',
+    ]
+}
 
 setup(
     name='nrtest',
@@ -31,11 +37,11 @@ setup(
     url='https://github.com/davidchall/nrtest',
     packages=[
         'nrtest',
-        'nrtest.result',
     ],
     scripts=[
         'scripts/nrtest',
     ],
+    entry_points=entry_points,
     include_package_data=True,
     install_requires=requirements,
     license="MIT",

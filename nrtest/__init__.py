@@ -128,6 +128,10 @@ class Test(Metadata):
     def __init__(self, *args, **kwargs):
         super(Test, self).__init__(*args, **kwargs)
 
+        for fname, ftype in self.output_files.iteritems():
+            if ftype is None:
+                self.output_files[fname] = 'null'
+
         self.logger = logging.getLogger(self.name)
         if not self.logger.handlers:
             formatter = logging.Formatter('%(name)s: %(message)s')

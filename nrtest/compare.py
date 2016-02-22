@@ -5,8 +5,8 @@ import os
 import logging
 
 # project imports
-from .result import create
 from .utility import color
+from .plugin import find_unique_function
 
 
 class CompareException(Exception):
@@ -67,6 +67,8 @@ def compare_test(test_sut, test_ref, rtol, atol):
         # compare result files
         # return False immediately if any are incompatible
         for fname, ftype in test_sut.output_files.iteritems():
+
+            ftype = ftype.lower()
             path_sut = os.path.join(test_sut.output_dir, fname)
             path_ref = os.path.join(test_ref.output_dir, fname)
 
@@ -75,17 +77,19 @@ def compare_test(test_sut, test_ref, rtol, atol):
             if not os.path.exists(path_ref):
                 raise CompareException('Output file not found: %s' % path_ref)
 
-            result_sut = create(ftype)(path_sut)
-            result_ref = create(ftype)(path_ref)
-
-            compatible = result_sut.compatible(result_ref, rtol, atol)
+            compare_file = find_unique_function('compare', ftype)
+            try:
+                compatible = compare_file(path_sut, path_ref, rtol, atol)
+            except Exception as e:
+                logger.debug(str(e))
+                raise CompareException('Unexpected error occurred during diff')
 
             if not compatible:
                 raise CompareException('%s: diff failed' % fname)
 
     except CompareException as e:
         logger.info(color('fail', 'r'))
-        logger.debug(str(e))
+        logger.info(str(e))
         compatible = False
 
     else:
@@ -112,6 +116,11 @@ def validate_testsuite(ts):
         if not validate_test(t):
             return False
 
+    file_types = set(ft for t in ts.tests for ft in t.output_files.values())
+    for ft in file_types:
+        if find_unique_function('compare', ft) is None:
+            return False
+
     return True
 
 
@@ -128,4 +137,21 @@ def validate_test(test):
             logger.error('Unable to find "%s" property' % field)
             return False
 
+    return True
+
+
+##################################
+# Bundled compare_file functions #
+##################################
+def default_compare(path_test, path_ref, rtol, atol):
+    """A default comaprison, which is similar to the diff utility.
+    """
+    import filecmp
+    return filecmp.cmp(path_test, path_ref, shallow=False)
+
+
+def null_compare(path_test, path_ref, rtol, atol):
+    """A null comparison. This is used when a result file is required to be
+    produced by a test, but it is not possible to compare to a benchmark.
+    """
     return True
