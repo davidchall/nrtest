@@ -29,12 +29,14 @@ def compare_testsuite(ts_sut, ts_ref, rtol, atol):
     # check testsuites are comparable
     tests_sut = {t.name: t for t in ts_sut.tests}
     tests_ref = {t.name: t for t in ts_ref.tests}
+    common_test_names = set(tests_sut.keys()) & set(tests_ref.keys())
     if tests_sut.keys() != tests_ref.keys():
         logging.warning('SUT and benchmark contain different tests')
+        logging.warning('Comparing %i common tests' % len(common_test_names))
 
     # compare all tests and return False if any are incompatible
     compatible = True
-    for name in sorted(tests_sut):
+    for name in sorted(common_test_names):
         test_sut = tests_sut[name]
         test_ref = tests_ref[name]
 
