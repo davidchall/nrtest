@@ -29,9 +29,8 @@ def compare_testsuite(ts_sut, ts_ref, rtol, atol):
     # check testsuites are comparable
     tests_sut = {t.name: t for t in ts_sut.tests}
     tests_ref = {t.name: t for t in ts_ref.tests}
-    if not set(tests_sut.keys()).issubset(tests_ref.keys()):
-        logging.error('SUT and benchmark contain different tests')
-        return False
+    if tests_sut.keys() != tests_ref.keys():
+        logging.warning('SUT and benchmark contain different tests')
 
     # compare all tests and return False if any are incompatible
     compatible = True
