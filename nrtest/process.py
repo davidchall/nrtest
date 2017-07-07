@@ -20,10 +20,11 @@ def source(script, old_env=None):
         return None
 
     # Force use of bash shell
-    cmd = ['/bin/bash', '-c', 'source %s; env' % script]
+    print_env_cmd = 'env; echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"; echo "DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH"'
+    cmd = ['/bin/bash', '-c', 'source %s; %s' % (script, print_env_cmd)]
     stdout = subprocess.check_output(cmd, env=old_env, universal_newlines=True)
 
-    return dict((line.split('=', 1) for line in stdout.splitlines()))
+    return dict((line.split('=', 1) for line in stdout.splitlines() if len(line.split('=', 1)) == 2))
 
 
 def execute(cmd, stdin=None, stdout=None, stderr=subprocess.STDOUT,
