@@ -38,6 +38,10 @@ def compare_testsuite(ts_sut, ts_ref, rtol, atol, outfile):
     receipt = {
         'Application_UnderTest': ts_sut.app.skim(),
         'Application_Reference': ts_ref.app.skim(),
+        'CompareTolerance': {
+            'relative': rtol,
+            'absolute': atol,
+        },
         'Tests': [],
     }
 
