@@ -3,6 +3,7 @@
 # system imports
 import os.path
 import logging
+from functools import total_ordering
 
 # third-party imports
 import six
@@ -11,6 +12,7 @@ __author__ = 'David Hall'
 __version__ = '0.2.2'
 
 
+@total_ordering
 class Metadata(dict):
     """Metadata can be accessed using both dictionary and attribute syntax.
     Provides basic validation of input fields, with different requirements for
@@ -52,6 +54,12 @@ class Metadata(dict):
         for k, v in allowed.items():
             if k not in data:
                 data[k] = v
+
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def __lt__(self, other):
+        return self.name < other.name
 
 
 class Application(Metadata):

@@ -2,6 +2,7 @@
 
 # system imports
 import os
+import json
 import logging
 
 # third-party imports
@@ -16,7 +17,7 @@ class CompareException(Exception):
     pass
 
 
-def compare_testsuite(ts_sut, ts_ref, rtol, atol):
+def compare_testsuite(ts_sut, ts_ref, rtol, atol, outfile):
     """Compare the results of a testsuite against a benchmark.
 
     Args:
@@ -34,14 +35,32 @@ def compare_testsuite(ts_sut, ts_ref, rtol, atol):
         logging.warning('SUT and benchmark contain different tests')
         logging.warning('Comparing %i common tests' % len(common_test_names))
 
+    receipt = {
+        'Application_UnderTest': ts_sut.app.skim(),
+        'Application_Reference': ts_ref.app.skim(),
+        'CompareTolerance': {
+            'relative': rtol,
+            'absolute': atol,
+        },
+        'Tests': [],
+    }
+
     # compare all tests and return False if any are incompatible
     compatible = True
     for name in sorted(common_test_names):
         test_sut = tests_sut[name]
         test_ref = tests_ref[name]
 
-        if not compare_test(test_sut, test_ref, rtol, atol):
+        comparison = compare_test(test_sut, test_ref, rtol, atol)
+        receipt['Tests'].append(comparison)
+
+        if not comparison['passed']:
             compatible = False
+
+    if outfile:
+        with open(outfile, 'w') as f:
+            json.dump(receipt, f, sort_keys=True, indent=4,
+                      separators=(',', ': '))
 
     return compatible
 
@@ -57,6 +76,13 @@ def compare_test(test_sut, test_ref, rtol, atol):
     Returns: boolean compatibility
     """
     logger = logging.getLogger(test_sut.name)
+
+    comparison = {
+        'name': test_sut.name,
+        'description': test_sut.description,
+        'passed': None,
+        'error_msg': None,
+    }
 
     compatible = True
     try:
@@ -85,21 +111,22 @@ def compare_test(test_sut, test_ref, rtol, atol):
             try:
                 compatible = compare_file(path_sut, path_ref, rtol, atol)
             except Exception as e:
-                logger.debug(str(e))
-                raise CompareException('Unexpected error occurred during diff')
+                raise CompareException('Exception raised during diff: %s' % e)
 
             if not compatible:
                 raise CompareException('%s: diff failed' % fname)
 
     except CompareException as e:
+        comparison['passed'] = False
+        comparison['error_msg'] = str(e)
         logger.info(color('fail', 'r'))
         logger.info(str(e))
-        compatible = False
 
     else:
+        comparison['passed'] = compatible
         logger.info(color('pass', 'g'))
 
-    return compatible
+    return comparison
 
 
 def validate_testsuite(ts):

@@ -56,7 +56,8 @@ def compare(args):
 
     try:
         logging.info('Found %i tests' % len(ts_new.tests))
-        compatible = compare_testsuite(ts_new, ts_old, args.rtol, args.atol)
+        compatible = compare_testsuite(ts_new, ts_old, args.rtol, args.atol,
+                                       args.output)
     except KeyboardInterrupt:
         logging.warning('Process interrupted by user')
         compatible = False
@@ -91,6 +92,8 @@ if __name__ == '__main__':
     c_parser.set_defaults(func=compare)
     c_parser.add_argument('new', metavar='new_benchmark')
     c_parser.add_argument('old', metavar='old_benchmark')
+    c_parser.add_argument('-o', '--output', default=None,
+                          help='Path to JSON file of comparison results.')
     c_parser.add_argument('--rtol', type=float, default=0.01,
                           help='Relative precision at which results \
                           considered compatible')
