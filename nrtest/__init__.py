@@ -9,7 +9,7 @@ from functools import total_ordering
 import six
 
 __author__ = 'David Hall'
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 
 
 @total_ordering
