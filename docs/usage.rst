@@ -41,3 +41,9 @@ Comparisons of numerical result files might compare the difference to a toleranc
     $ nrtest compare benchmarks/new benchmarks/old --rtol=0.01 --atol=0.0
 
 These are the default tolerances.
+
+It is also possible to output the results of the comparison to a JSON file::
+
+    $ nrtest compare benchmarks/new benchmarks/old -o receipt.json
+
+which can be helpful to post-process the comparison (e.g. display in dashboard, email notification).
