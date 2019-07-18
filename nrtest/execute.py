@@ -86,7 +86,7 @@ def _execute(test, app):
                 copy_file_and_path(fname, tmpdir, test.output_dir)
 
     finally:
-        shutil.rmtree(tmpdir)
+        shutil.rmtree(tmpdir, ignore_errors=True)
 
     if exitcode == -11:
         raise TestFailure('Segmentation fault')
