@@ -18,7 +18,7 @@ deploy:
   distributions: sdist bdist_wheel
   user: davidchall
   password:
-    secure: NrYy32DZZAxUAEjiyGPhc6afLvs/buehvr4Vm3sdMCWmTD+XSOQtul9Wn7whR6ToEMq+iiFt8eLKd2OfhiLjvUW9AHAPADns10uss0TceTfx3zfPPGb7q561mmaa8pZm3q6yHS7BDyOfNujLC7pfh7VtBHRIq4DJKUAiMHil0u8=
+    secure: "OpyMfUBnOA4/w75yQDxjdSwhLS/Nlaoy6yrGbs6Uv+7ZljT0C7nx5Q7elPQB8kb1Jml985X71UCusU3ADbbRghevnupzeWV5CfOC6VoKQpRKY0sD8+sUzzEY8Uxc7P/m9092A94FdVyXGth2yFdr6Eg8Y1FYJYVwB4Val197EQg="
   on:
     tags: true
     repo: davidchall/nrtest
