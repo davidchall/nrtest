@@ -43,7 +43,7 @@ def rmtree(path):
     """Delete an entire directory tree.
 
     This is a wrapper around shutil.rmtree, which handles sporadic
-    failures on Windows machines by repeating the attempted deletion
+    failures on Windows machines. It repeats the attempted deletion
     with an exponentially increasing timeout (a total timeout of
     about 1 second).
     """
