@@ -5,6 +5,7 @@ import os
 import sys
 import re
 import shutil
+import time
 
 
 def color(string, c):
