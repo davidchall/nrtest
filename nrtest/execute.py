@@ -4,13 +4,12 @@
 import os
 import logging
 import tempfile
-import shutil
 import json
 import datetime
 
 # project imports
 from .process import source, execute, monitor
-from .utility import color, copy_file_and_path, which
+from .utility import color, copy_file_and_path, rmtree, which
 
 
 class TestFailure(Exception):
@@ -86,7 +85,7 @@ def _execute(test, app):
                 copy_file_and_path(fname, tmpdir, test.output_dir)
 
     finally:
-        shutil.rmtree(tmpdir)
+        rmtree(tmpdir)
 
     if exitcode == -11:
         raise TestFailure('Segmentation fault')
