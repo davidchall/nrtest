@@ -5,6 +5,7 @@ import os
 import sys
 import re
 import shutil
+import time
 
 
 def color(string, c):
@@ -37,6 +38,30 @@ def copy_file_and_path(rel_path, src_dir, dest):
     if not os.path.isdir(dest):
         os.makedirs(dest)
     shutil.copy(os.path.join(src_dir, rel_path), dest)
+
+
+def rmtree(path):
+    """Delete an entire directory tree.
+
+    This is a wrapper around shutil.rmtree, which handles sporadic
+    failures on Windows machines. It repeats the attempted deletion
+    with an exponentially increasing timeout (a total timeout of
+    about 1 second).
+    """
+    # constants taken from CPython's test.support.rmtree()
+    # i.e. Windows implementation of test.support._waitfor()
+    timeout = 0.001
+    max_timeout = 1.0
+    while timeout < max_timeout:
+        try:
+            shutil.rmtree(path)
+            return
+        except OSError:
+            time.sleep(timeout)
+            timeout *= 2
+
+    # final attempt, without exception handling
+    shutil.rmtree(path)
 
 
 def which(program, env):
