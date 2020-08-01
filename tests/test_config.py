@@ -22,6 +22,7 @@ test_comparison = {
     'name': 'test',
     'version': 1.0,
     'description': None,
+    'minimum_app_version': None,
     'output_files': {'output.txt': 'default'},
     'passed': True,
     'error_msg': None,

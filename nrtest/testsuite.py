@@ -27,6 +27,10 @@ class TestSuite(object):
         self.tests = sorted(tests)
         self.benchmark_path = benchmark_path
 
+        for t in self.tests:
+            t.input_dir = None
+            t.output_dir = os.path.join(benchmark_path, slugify(t.name))
+
     @classmethod
     def read_config(cls, app_config_path, test_config_paths, benchmark_path):
         """Constructs a TestSuite instance from a set of JSON config files,

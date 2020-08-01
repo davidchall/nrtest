@@ -17,6 +17,7 @@ with open('HISTORY.rst') as history_file:
 requirements = [
     'six',
     'psutil>=2.0',
+    'packaging',
 ]
 
 # bundled actions

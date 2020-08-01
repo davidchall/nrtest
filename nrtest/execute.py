@@ -7,6 +7,9 @@ import tempfile
 import json
 import datetime
 
+# third-party imports
+from packaging import version
+
 # project imports
 from .process import source, execute, monitor
 from .utility import color, copy_file_and_path, rmtree, which
@@ -131,7 +134,12 @@ def validate_testsuite(ts):
         return False
 
     for t in ts.tests:
-        if not validate_test(t):
+        if t.minimum_app_version and \
+           version.parse(ts.app.version) < version.parse(t.minimum_app_version):
+            logging.info('Skipping test (app version too old): "%s"' % t.name)
+            ts.tests.remove(t)
+
+        elif not validate_test(t):
             return False
 
     p = ts.benchmark_path
@@ -158,15 +166,16 @@ def validate_test(test):
             logger.error('Unable to find "%s" property' % field)
             return False
 
-    p = test.input_dir
-    if not os.path.isdir(p):
-        logger.error('Input directory not found: "%s"' % p)
-        return False
-
-    for fname in test.input_files:
-        p = os.path.join(test.input_dir, fname)
-        if not os.path.isfile(p):
-            logger.error('Input file not found: "%s"' % p)
+    if len(test.input_files) > 0:
+        p = test.input_dir
+        if not os.path.isdir(p):
+            logger.error('Input directory not found: "%s"' % p)
             return False
+
+        for fname in test.input_files:
+            p = os.path.join(test.input_dir, fname)
+            if not os.path.isfile(p):
+                logger.error('Input file not found: "%s"' % p)
+                return False
 
     return True
