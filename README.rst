@@ -2,7 +2,7 @@
 nrtest
 ===============================
 
-|pypi| |travis-ci| |coveralls| |readthedocs|
+|pypi| |ci| |coveralls| |readthedocs|
 
 ``nrtest`` is an end-to-end regression testing framework, designed for scientific software that perform numerical calculations.
 
@@ -87,8 +87,8 @@ More advanced usage is detailed in the documentation_.
         :target: https://pypi.python.org/pypi/nrtest
         :alt: PyPI Package
 
-.. |travis-ci| image:: https://img.shields.io/travis/davidchall/nrtest.svg
-        :target: https://travis-ci.org/davidchall/nrtest
+.. |ci| image:: https://github.com/davidchall/nrtest/workflows/CI/badge.svg
+        :target: https://github.com/davidchall/nrtest/actions
         :alt: Build Status
 
 .. |coveralls| image:: https://coveralls.io/repos/github/davidchall/nrtest/badge.svg?branch=master
