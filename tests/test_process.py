@@ -33,14 +33,6 @@ class TestProcess(unittest.TestCase):
         os.remove(script_name)
         self.assertEqual(stdout.strip(), var_value)
 
-    def test_duration(self):
-        time = 2
-        p = execute('sleep %s' % time)
-        (_, perf) = monitor(p)
-        duration = perf['duration']
-
-        self.assertAlmostEqual(duration, time, delta=1.0)
-
     def test_timeout(self):
         p = execute('sleep 5')
         (_, perf) = monitor(p, timeout=2)
