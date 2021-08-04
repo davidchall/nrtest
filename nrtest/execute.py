@@ -157,7 +157,6 @@ def validate_test(test):
 
     # not specified by user, but should be set by now
     additional_required_fields = [
-        'input_dir',
         'output_dir',
     ]
 
