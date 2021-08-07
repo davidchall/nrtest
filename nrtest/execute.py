@@ -121,6 +121,15 @@ def _postcheck(test):
         if not os.path.isfile(p):
             raise TestFailure('Output file not generated: "%s"' % fname)
 
+def _skip_test(test, app):
+    skip = False
+
+    if t.minimum_app_version:
+        skip = version.parse(app.version) < version.parse(t.minimum_app_version)
+        if skip:
+            logging.info('Skipping test (app version too old): "%s"' % t.name)
+
+    return skip
 
 def validate_testsuite(ts):
     p = ts.app.setup_script
@@ -133,13 +142,10 @@ def validate_testsuite(ts):
         logging.error('Unable to find executable: "%s"' % ts.app.exe)
         return False
 
-    for t in ts.tests:
-        if t.minimum_app_version and \
-           version.parse(ts.app.version) < version.parse(t.minimum_app_version):
-            logging.info('Skipping test (app version too old): "%s"' % t.name)
-            ts.tests.remove(t)
+    ts.tests[:] = [t for t in ts.tests if not _skip_test(t, ts.app)]
 
-        elif not validate_test(t):
+    for t in ts.tests:
+        if not validate_test(t):
             return False
 
     p = ts.benchmark_path
