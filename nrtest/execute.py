@@ -124,10 +124,9 @@ def _postcheck(test):
 def _skip_test(test, app):
     skip = False
 
-    if t.minimum_app_version:
-        skip = version.parse(app.version) < version.parse(t.minimum_app_version)
-        if skip:
-            logging.info('Skipping test (app version too old): "%s"' % t.name)
+    if test.minimum_app_version and version.parse(app.version) < version.parse(test.minimum_app_version):
+        skip = True
+        logging.info('Skipping test (app version too old): "%s"' % test.name)
 
     return skip
 
