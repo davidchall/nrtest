@@ -143,9 +143,9 @@ def _measure_performance(proc, time):
     if not sys.platform.startswith('darwin') and \
        not sys.platform.lower().startswith('sunos'):
 
-            read_MB = float(proc.io_counters().read_bytes) / 1024 / 1024
-            write_MB = float(proc.io_counters().write_bytes) / 1024 / 1024
-            datum['read_MB'] = read_MB
-            datum['write_MB'] = write_MB
+        read_MB = float(proc.io_counters().read_bytes) / 1024 / 1024
+        write_MB = float(proc.io_counters().write_bytes) / 1024 / 1024
+        datum['read_MB'] = read_MB
+        datum['write_MB'] = write_MB
 
     return datum

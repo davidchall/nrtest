@@ -121,6 +121,7 @@ def _postcheck(test):
         if not os.path.isfile(p):
             raise TestFailure('Output file not generated: "%s"' % fname)
 
+
 def _skip_test(test, app):
     skip = False
 
@@ -129,6 +130,7 @@ def _skip_test(test, app):
         logging.info('Skipping test (app version too old): "%s"' % test.name)
 
     return skip
+
 
 def validate_testsuite(ts):
     p = ts.app.setup_script
