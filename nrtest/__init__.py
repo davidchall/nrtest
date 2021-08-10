@@ -128,7 +128,6 @@ class Test(Metadata):
         'name',
         'version',
         'description',
-        'minimum_app_version',
         'output_files',
         'passed',
         'error_msg',
