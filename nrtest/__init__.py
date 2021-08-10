@@ -119,6 +119,7 @@ class Test(Metadata):
     ]
     execute_optional_fields = {
         'description': None,
+        'minimum_app_version': None,
         'input_files': [],
         'output_files': {},
         'fail_strings': [],

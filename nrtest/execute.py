@@ -7,6 +7,9 @@ import tempfile
 import json
 import datetime
 
+# third-party imports
+from packaging import version
+
 # project imports
 from .process import source, execute, monitor
 from .utility import color, copy_file_and_path, rmtree, which
@@ -119,6 +122,16 @@ def _postcheck(test):
             raise TestFailure('Output file not generated: "%s"' % fname)
 
 
+def _skip_test(test, app):
+    skip = False
+
+    if test.minimum_app_version and version.parse(app.version) < version.parse(test.minimum_app_version):
+        skip = True
+        logging.info('Skipping test (app version too old): "%s"' % test.name)
+
+    return skip
+
+
 def validate_testsuite(ts):
     p = ts.app.setup_script
     if p and not os.path.exists(p):
@@ -129,6 +142,8 @@ def validate_testsuite(ts):
     if not which(ts.app.exe, env):
         logging.error('Unable to find executable: "%s"' % ts.app.exe)
         return False
+
+    ts.tests[:] = [t for t in ts.tests if not _skip_test(t, ts.app)]
 
     for t in ts.tests:
         if not validate_test(t):
@@ -149,7 +164,6 @@ def validate_test(test):
 
     # not specified by user, but should be set by now
     additional_required_fields = [
-        'input_dir',
         'output_dir',
     ]
 
@@ -158,15 +172,16 @@ def validate_test(test):
             logger.error('Unable to find "%s" property' % field)
             return False
 
-    p = test.input_dir
-    if not os.path.isdir(p):
-        logger.error('Input directory not found: "%s"' % p)
-        return False
-
-    for fname in test.input_files:
-        p = os.path.join(test.input_dir, fname)
-        if not os.path.isfile(p):
-            logger.error('Input file not found: "%s"' % p)
+    if len(test.input_files) > 0:
+        p = test.input_dir
+        if not os.path.isdir(p):
+            logger.error('Input directory not found: "%s"' % p)
             return False
+
+        for fname in test.input_files:
+            p = os.path.join(test.input_dir, fname)
+            if not os.path.isfile(p):
+                logger.error('Input file not found: "%s"' % p)
+                return False
 
     return True

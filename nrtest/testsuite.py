@@ -27,6 +27,9 @@ class TestSuite(object):
         self.tests = sorted(tests)
         self.benchmark_path = benchmark_path
 
+        for t in self.tests:
+            t.output_dir = os.path.join(benchmark_path, slugify(t.name))
+
     @classmethod
     def read_config(cls, app_config_path, test_config_paths, benchmark_path):
         """Constructs a TestSuite instance from a set of JSON config files,
@@ -45,7 +48,6 @@ class TestSuite(object):
             with open(p) as f:
                 t = Test.for_execution(json.load(f))
                 t.input_dir = os.path.dirname(p)
-                t.output_dir = os.path.join(benchmark_path, slugify(t.name))
                 tests.append(t)
 
         return cls(app, tests, benchmark_path)
@@ -64,8 +66,6 @@ class TestSuite(object):
 
         app = Application.for_comparison(manifest['Application'])
         tests = [Test.for_comparison(test) for test in manifest['Tests']]
-        for t in tests:
-            t.output_dir = os.path.join(benchmark_path, slugify(t.name))
 
         return cls(app, tests, benchmark_path)
 

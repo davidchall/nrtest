@@ -26,6 +26,8 @@ Optional fields
 
 **description** *[string]*
     A short description to help identification of this version.
+**minimum_app_version** *[string]*
+    The minimum software version required for the test to be executed (see :ref:`config_sw`). If the software under test does not satisfy this requirement, then the test is removed from the test suite before execution. This allows you to run the latest test suite on old software without test failures.
 **input_files** *[list of strings]*
     A list of required input files. Each path is specified relative to the location of the configuration file itself.
 **output_files** *[dict of string-string pairs]*
