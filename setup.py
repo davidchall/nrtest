@@ -30,7 +30,7 @@ entry_points = {
 
 setup(
     name='nrtest',
-    version='0.2.4',
+    version='0.2.5',
     description="Numerical regression testing",
     long_description=readme + '\n\n' + history,
     author="David Hall",
