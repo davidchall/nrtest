@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.5 (2021-08-10)
+------------------
+
+* Add ability to skip tests based on `minimum_app_version` config
+
+
 0.2.4 (2019-09-11)
 ------------------
 
