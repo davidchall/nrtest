@@ -1,0 +1,6 @@
+-r requirements.txt
+autodoc-pydantic
+bumpversion
+flake8
+pytest
+Sphinx==4.1.2
