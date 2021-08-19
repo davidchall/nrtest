@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional
 
 import pkg_resources.extern.packaging.version as version
 import pydantic
@@ -28,8 +28,9 @@ class Version(version.Version):
 
 
 class BaseModel(pydantic.BaseModel):
-    """BaseModel class that can encode Version objects."""
+    """BaseModel class underlying Config classes."""
     class Config:
+        extra = "forbid"
         json_encoders = {
             Version: lambda x: str(x),
         }
