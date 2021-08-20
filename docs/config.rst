@@ -4,7 +4,7 @@ Configuration
 .. currentmodule:: nrtest.config
 
 .. autosummary::
-   :toctree: _autosummary
+    :toctree: _autosummary
 
-   AppConfig
-   TestConfig
+    AppConfig
+    TestConfig
