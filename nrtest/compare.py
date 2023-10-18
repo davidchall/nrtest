@@ -4,6 +4,7 @@
 import os
 import json
 import logging
+from datetime import datetime
 
 # third-party imports
 import six
@@ -11,6 +12,11 @@ import six
 # project imports
 from .utility import color
 from .plugin import find_unique_function
+
+
+cwidth = 4
+nwidth = 35
+fill = '.'
 
 
 class CompareException(Exception):
@@ -47,11 +53,11 @@ def compare_testsuite(ts_sut, ts_ref, rtol, atol, outfile):
 
     # compare all tests and return False if any are incompatible
     compatible = True
-    for name in sorted(common_test_names):
+    for count, name in enumerate(sorted(common_test_names), start=1):
         test_sut = tests_sut[name]
         test_ref = tests_ref[name]
 
-        comparison = compare_test(test_sut, test_ref, rtol, atol)
+        comparison = compare_test(count, test_sut, test_ref, rtol, atol)
         receipt['Tests'].append(comparison)
 
         if not comparison['passed']:
@@ -65,7 +71,7 @@ def compare_testsuite(ts_sut, ts_ref, rtol, atol, outfile):
     return compatible
 
 
-def compare_test(test_sut, test_ref, rtol, atol):
+def compare_test(count, test_sut, test_ref, rtol, atol):
     """Compare the results of a single test against a benchmark.
 
     Args:
@@ -75,6 +81,10 @@ def compare_test(test_sut, test_ref, rtol, atol):
 
     Returns: boolean compatibility
     """
+
+    ccount = f"#{count}"
+    name = f"{test_sut.name} "
+
     logger = logging.getLogger(test_sut.name)
 
     comparison = {
@@ -96,6 +106,7 @@ def compare_test(test_sut, test_ref, rtol, atol):
 
         # compare result files
         # return False immediately if any are incompatible
+        start_time = datetime.now()
         for fname, ftype in six.iteritems(test_sut.output_files):
 
             ftype = ftype.lower()
@@ -110,21 +121,26 @@ def compare_test(test_sut, test_ref, rtol, atol):
             compare_file = find_unique_function('compare', ftype)
             try:
                 compatible = compare_file(path_sut, path_ref, rtol, atol)
+
             except Exception as e:
                 raise CompareException('Exception raised during diff: %s' % e)
 
             if not compatible:
                 raise CompareException('%s: diff failed' % fname)
 
+        duration = (datetime.now() - start_time).total_seconds()
+
     except CompareException as e:
         comparison['passed'] = False
         comparison['error_msg'] = str(e)
-        logger.info(color('fail', 'r'))
+        status = color('fail', 'r')
+        logging.info(f"Test  {ccount:>{cwidth}}:  {name:{fill}<{nwidth}}  {status}")
         logger.info(str(e))
 
     else:
         comparison['passed'] = compatible
-        logger.info(color('pass', 'g'))
+        status = color('pass', 'g')
+        logging.info(f"Test  {ccount:>{cwidth}}:  {name:{fill}<{nwidth}}  {status}    {duration:3.3f} sec")
 
     return comparison
 
