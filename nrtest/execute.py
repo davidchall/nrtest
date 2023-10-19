@@ -5,7 +5,7 @@ import os
 import logging
 import tempfile
 import json
-import datetime
+from datetime import datetime
 
 # third-party imports
 from packaging import version
@@ -26,9 +26,23 @@ class TestFailure(Exception):
 
 def execute_testsuite(ts):
     success = True
-    for count, test in enumerate(ts.tests, start=1):
-        if not execute_test(count, test, ts.app):
+    pass_count = 0
+
+    start_time = datetime.now()
+
+    for test_count, test in enumerate(ts.tests, start=1):
+        if not execute_test(test_count, test, ts.app):
             success = False
+        else:
+            pass_count += 1
+
+    duration = (datetime.now() - start_time).total_seconds()
+
+    prct = int(100*pass_count/test_count)
+    fail_count = test_count - pass_count
+    logging.info("")
+    logging.info(f"{prct}% tests passed, {fail_count} tests failed of {test_count}")
+    logging.info(f"Total test time (real) = {duration:3.2f} sec")
 
     return success
 
@@ -56,7 +70,7 @@ def execute_test(count, test, app):
         test.passed = True
         test.error_msg = None
         status = color('pass', 'g')
-        logging.info(f"Test  {tcount:>{cwidth}}:  {name:{fill}<{nwidth}}  {status}    {duration:3.3f} sec")
+        logging.info(f"Test  {tcount:>{cwidth}}:  {name:{fill}<{nwidth}}  {status}    {duration:3.2f} sec")
 #        dur_str = str(datetime.timedelta(seconds=duration)).split('.')[0]
 #        logger.debug('Duration {0}'.format(dur_str))
 

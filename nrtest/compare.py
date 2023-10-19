@@ -53,15 +53,29 @@ def compare_testsuite(ts_sut, ts_ref, rtol, atol, outfile):
 
     # compare all tests and return False if any are incompatible
     compatible = True
-    for count, name in enumerate(sorted(common_test_names), start=1):
+    pass_count = 0
+
+    start_time = datetime.now()
+
+    for test_count, name in enumerate(sorted(common_test_names), start=1):
         test_sut = tests_sut[name]
         test_ref = tests_ref[name]
 
-        comparison = compare_test(count, test_sut, test_ref, rtol, atol)
+        comparison = compare_test(test_count, test_sut, test_ref, rtol, atol)
         receipt['Tests'].append(comparison)
 
         if not comparison['passed']:
             compatible = False
+        else:
+            pass_count += 1
+
+    duration = (datetime.now() - start_time).total_seconds()
+
+    prct = int(100*pass_count/test_count)
+    fail_count = test_count - pass_count
+    logging.info("")
+    logging.info(f"{prct}% tests passed, {fail_count} tests failed of {test_count}")
+    logging.info(f"Total test time (real) = {duration:3.2f} sec")
 
     if outfile:
         with open(outfile, 'w') as f:
@@ -140,7 +154,7 @@ def compare_test(count, test_sut, test_ref, rtol, atol):
     else:
         comparison['passed'] = compatible
         status = color('pass', 'g')
-        logging.info(f"Test  {ccount:>{cwidth}}:  {name:{fill}<{nwidth}}  {status}    {duration:3.3f} sec")
+        logging.info(f"Test  {ccount:>{cwidth}}:  {name:{fill}<{nwidth}}  {status}    {duration:3.2f} sec")
 
     return comparison
 
