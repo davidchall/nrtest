@@ -5,7 +5,7 @@ import os
 import logging
 import tempfile
 import json
-import datetime
+from datetime import datetime
 
 # third-party imports
 from packaging import version
@@ -15,20 +15,42 @@ from .process import source, execute, monitor
 from .utility import color, copy_file_and_path, rmtree, which
 
 
+cwidth = 4
+nwidth = 35
+fill = '.'
+
+
 class TestFailure(Exception):
     pass
 
 
 def execute_testsuite(ts):
     success = True
-    for test in ts.tests:
-        if not execute_test(test, ts.app):
+    pass_count = 0
+
+    start_time = datetime.now()
+
+    for test_count, test in enumerate(ts.tests, start=1):
+        if not execute_test(test_count, test, ts.app):
             success = False
+        else:
+            pass_count += 1
+
+    duration = (datetime.now() - start_time).total_seconds()
+
+    prct = int(100*pass_count/test_count)
+    fail_count = test_count - pass_count
+    logging.info("")
+    logging.info(f"{prct}% tests passed, {fail_count} tests failed of {test_count}")
+    logging.info(f"Total test time (real) = {duration:3.2f} sec")
 
     return success
 
 
-def execute_test(test, app):
+def execute_test(count, test, app):
+    tcount = f"#{count}"
+    name = f"{test.name} "
+
     logger = logging.getLogger(test.name)
 
     if not os.path.exists(test.output_dir):
@@ -37,17 +59,20 @@ def execute_test(test, app):
     try:
         duration = _execute(test, app)
         _postcheck(test)
+
     except TestFailure as e:
         test.passed = False
         test.error_msg = str(e)
-        logger.info(color('fail', 'r'))
+        status = color('fail', 'r')
+        logging.info(f"Test  {tcount:>{cwidth}}:  {name:{fill}<{nwidth}}  {status}")
         logger.info(test.error_msg)
     else:
         test.passed = True
         test.error_msg = None
-        logger.info(color('pass', 'g'))
-        dur_str = str(datetime.timedelta(seconds=duration)).split('.')[0]
-        logger.debug('Duration {0}'.format(dur_str))
+        status = color('pass', 'g')
+        logging.info(f"Test  {tcount:>{cwidth}}:  {name:{fill}<{nwidth}}  {status}    {duration:3.2f} sec")
+#        dur_str = str(datetime.timedelta(seconds=duration)).split('.')[0]
+#        logger.debug('Duration {0}'.format(dur_str))
 
     return test.passed
 
